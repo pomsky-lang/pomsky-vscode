@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Pomsky",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#keywords" },
+    { "include": "#dstrings" },
+    { "include": "#sstrings" },
+    { "include": "#references" },
+    { "include": "#codepoints" },
+    { "include": "#numbers" },
+    { "include": "#constants" }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.other.pomsky",
+          "match": "\\b(let|enable|disable|test)\\b"
+        },
+        {
+          "name": "keyword.control.pomsky",
+          "match": "\\b(if|else|lazy|greedy|range|base|atomic|recursion|regex)\\b|!?(<<|>>)|[+*?]"
+        },
+        {
+          "name": "keyword.operator.pomsky",
+          "match": "[|]"
+        }
+      ]
+    },
+    "comments": {
+      "name": "comment.line.number-sign.pomsky",
+      "begin": "#",
+      "end": "\n"
+    },
+    "dstrings": {
+      "name": "string.quoted.double.pomsky",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.pomsky",
+          "match": "\\\\[\"\\\\]"
+        },
+        {
+          "name": "invalid.illegal.escape.pomsky",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "sstrings": {
+      "name": "string.quoted.single.pomsky",
+      "begin": "'",
+      "end": "'"
+    },
+    "references": {
+      "name": "variable.name.pomsky",
+      "match": ":(:?\\w*([+-]?\\d+|[a-zA-Z_][a-zA-Z0-9_]*)\\b)?"
+    },
+    "codepoints": {
+      "name": "constant.numeric.pomsky",
+      "match": "\\bU[+_][0-9a-fA-F]+\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.pomsky",
+      "match": "\\b[0-9]+\\b"
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.pomsky",
+          "match": "[.^$%]|!%"
+        },
+        {
+          "name": "constant.other.pomsky",
+          "match": "\\b(Start|End|C|Codepoint|G|Grapheme)\\b"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.pomsky"
+}
