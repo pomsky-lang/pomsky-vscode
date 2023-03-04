@@ -1,3 +1,49 @@
-h1 {
-  color: red;
+:root {
+  box-sizing: border-box;
+  font-size: 13px;
+  font-family: system-ui;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+pre {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-family: monospace, monospace;
+  font-size: 15px;
+}
+
+#exeError {
+  padding: 0.5rem 1rem;
+  font-size: 15px;
+  color: #ff3c3c;
+}
+
+#warnings {
+  padding: 0.5rem 1rem;
+  font-size: 15px;
+  color: #dd8100;
+}
+
+#warnings.errors {
+  color: #ff3c3c;
+}
+
+#pre:empty,
+#exeError:empty,
+#diagnostics:empty {
+  display: none;
 }
