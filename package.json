@@ -3,6 +3,19 @@
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
   "version": "0.1.0",
+  "publisher": "pomsky-lang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pomsky-lang/pomsky-vscode"
+  },
+  "readme": "README.md",
+  "homepage": "https://pomsky-lang.org/",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/Aloso"
+  },
+  "license": "(MIT OR Apache-2.0)",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -73,7 +86,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
-    "@types/vscode": "^1.76.0",
+    "@types/vscode": "^1.70.0",
     "@types/vscode-webview": "^1.57.0",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",

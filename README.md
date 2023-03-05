@@ -1,32 +1,55 @@
-# pomsky-vscode README
+<div align="center">
 
-This is the README for your extension "pomsky-vscode". After writing up a brief description, we recommend including the following sections.
+![Logo](./media/icon.png)
+
+# pomsky-vscode
+
+</div>
+
+The official extension for the [Pomsky](https://pomsky-lang.org) regular expression language. It is
+still in development and incomplete; expect some bugs.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Syntax highlighting
+- Live preview of compiled expression
+  - Right-click and select `Open compiled RegExp on the right` or click the icon in the top right
+    corner
 
-For example if there is an image subfolder under your extension project workspace:
+Missing IDE features:
 
-\!\[feature X\]\(images/feature-x.png\)
+- Autocomplete
+- Highlight errors/warnings directly in the source code (you can see them in the live preview for
+  now)
+- Go to definition / find usages / rename variable
+- Code formatting
+- Extend selection
+- Documentation tooltips
+- Quick fixes
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Missing Regex-specific features:
+
+- Select regex flavor
+- Find and replace
+
+If you need a feature not yet provided by this extension, check out the
+[playground](https://playground.pomsky-lang.org/). It is more feature-complete at this point.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+You need to have the `pomsky` executable installed locally. Get it from the
+[Releases](https://github.com/pomsky-lang/pomsky/releases) page, move it to a folder that's in your
+PATH, and rename it to `pomsky`.
+
+In the future we'll add a setting to specify a path to the executable. We might also embed an
+executable compiled to WASM, so no setup is needed.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+There aren't any settings yet. If you need something to be configurable, please
+[open an issue](https://github.com/pomsky-lang/pomsky-vscode/issues).
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
+<!--
 ## Known Issues
 
 Calling out known issues can help limit users opening duplicate issues against your extension.
@@ -35,31 +58,4 @@ Calling out known issues can help limit users opening duplicate issues against y
 
 Users appreciate release notes as you update your extension.
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+-->
