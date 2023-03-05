@@ -1,7 +1,10 @@
 :root {
   box-sizing: border-box;
-  font-size: 13px;
-  font-family: system-ui;
+  font-size: var(--vscode-font-size);
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  margin: 0;
+  padding: 0 0 2rem 0;
 }
 
 body,
@@ -22,28 +25,52 @@ ul {
 pre {
   margin: 0;
   padding: 0.5rem 1rem;
-  font-family: monospace, monospace;
-  font-size: 15px;
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-editor-font-family);
+  font-weight: var(--vscode-editor-font-weight);
+  font-size: var(--vscode-editor-font-size);
+  white-space: pre-wrap;
+  word-break: break-all;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #exeError {
-  padding: 0.5rem 1rem;
-  font-size: 15px;
-  color: #ff3c3c;
+  padding: 0.3rem 0.7rem;
+  background-color: var(--vscode-inputValidation-errorBackground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+  border-width: 1px 0;
 }
 
 #warnings {
   padding: 0.5rem 1rem;
-  font-size: 15px;
-  color: #dd8100;
+  font-size: 1.33rem;
+  color: var(--vscode-editorWarning-foreground);
 }
 
 #warnings.errors {
-  color: #ff3c3c;
+  color: var(--vscode-errorForeground);
 }
 
 #pre:empty,
 #exeError:empty,
 #diagnostics:empty {
   display: none;
+}
+
+#footer {
+  display: flex;
+  position: fixed;
+  box-sizing: border-box;
+  width: 100%;
+  bottom: 0;
+  background: var(--vscode-breadcrumb-background);
+  border: 1px solid var(--vscode-editorGroup-border);
+  padding: 0.2rem 0.75rem;
+  border-width: 1px 0 0 0;
+}
+
+#footer #timing {
+  flex-grow: 1;
+  text-align: right;
 }

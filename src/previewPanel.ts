@@ -18,6 +18,7 @@ export interface State {
   fileName: string
   content: string
   compileResult?: CompileResult
+  isCompiling: boolean
 }
 
 export interface CompileResult {
@@ -25,9 +26,10 @@ export interface CompileResult {
   exeError?: string
   diagnostics?: PomskyJsonDiagnostic[]
   timings?: { all: number }
+  actualLength?: number
 }
 
-export type Message = { setState: State }
+export type Message = { setState: State } | { setCompiling: boolean }
 
 export function activatePanel(context: ExtensionContext) {
   context.subscriptions.push(
@@ -153,25 +155,46 @@ function updateContent(context: PanelContext) {
   context.content = context.document?.getText()
 
   if (context.content !== undefined) {
-    runPomsky('js', context.content)
+    let completed = false
+    let isCompiling = true
+
+    setTimeout(() => {
+      if (!completed) {
+        context.panel.webview.postMessage({
+          setCompiling: isCompiling,
+        } as Message)
+      }
+    }, 10)
+
+    runPomsky('js', context.content, '//preview')
       .then(
         res => {
-          context.compileResult = {
-            output: res.output,
-            diagnostics: res.diagnostics,
-            timings: res.timings,
+          if (res !== undefined) {
+            // isCompiling is only set to `false` if `res` is defined!
+            isCompiling = false
+            context.compileResult = {
+              output: trimLength(res.output, 100_000),
+              actualLength: res.output?.length,
+              diagnostics: res.diagnostics,
+              timings: res.timings,
+            }
           }
         },
         (e: Error) => {
+          console.warn('[POMSKY]', e)
+          isCompiling = false
           context.compileResult = { exeError: e.message }
         },
       )
       .finally(() => {
+        completed = true
+
         context.panel.webview.postMessage({
           setState: {
             fileName,
             content: context.content,
             compileResult: context.compileResult,
+            isCompiling,
           },
         } as Message)
       })
@@ -203,7 +226,18 @@ function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
     <div id="warnings"></div>
     <pre id="diagnostics"></pre>
 
+    <div id="footer">
+      <div id="version"></div>
+      <div id="timing"></div>
+    </div>
+
     <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
   </body>
   </html>`
+}
+
+function trimLength(output: string | undefined, len: number) {
+  if (output !== undefined) {
+    return output.slice(0, len)
+  }
 }

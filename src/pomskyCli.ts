@@ -20,20 +20,49 @@ export interface PomskyJsonDiagnostic {
   visual: string
 }
 
-export async function runPomsky(flavor: 'js', content: string): Promise<PomskyJsonResponse> {
+let ps: ChildProcessWithoutNullStreams | undefined
+const previousContent = new Map<string, string>()
+
+export async function runPomsky(
+  flavor: 'js',
+  content: string,
+  key: string,
+): Promise<PomskyJsonResponse | undefined> {
+  if (content === previousContent.get(key)) {
+    return
+  }
+  previousContent.set(key, content)
+
+  let promiseCompleted = false
+
   return new Promise((resolve, reject) => {
-    let ps: ChildProcessWithoutNullStreams
+    if (ps !== undefined) {
+      ps.kill()
+      ps = undefined
+    }
+
     try {
       ps = cp.spawn('pomsky', ['-f', flavor, '--json', content])
     } catch (e) {
+      ps = undefined
+      promiseCompleted = true
       return reject(e)
     }
+
+    const currentPs = ps
 
     let allOut = ''
     let allErr = ''
     ps.stdout.on('data', data => (allOut += data))
     ps.stderr.on('data', data => (allErr += data))
+
     ps.on('error', e => {
+      if (promiseCompleted) {
+        return
+      }
+      ps = undefined
+      promiseCompleted = true
+
       if (e.message.includes('ENOENT')) {
         reject(
           new Error('Pomsky executable not found. Make sure the `pomsky` binary is in your PATH'),
@@ -42,8 +71,17 @@ export async function runPomsky(flavor: 'js', content: string): Promise<PomskyJs
         reject(e)
       }
     })
+
     ps.on('close', (code: number) => {
-      if (code !== 0 && code !== 1) {
+      if (promiseCompleted) {
+        return
+      }
+      ps = undefined
+      promiseCompleted = true
+
+      if (code == null && currentPs.killed) {
+        resolve(undefined)
+      } else if (code !== 0 && code !== 1) {
         reject(
           new Error(
             `Pomsky exited with non-zero status code: ${code}\n\nSTDOUT: ${allOut}\nSTDERR: ${allErr}`,
@@ -57,5 +95,15 @@ export async function runPomsky(flavor: 'js', content: string): Promise<PomskyJs
         }
       }
     })
+
+    setTimeout(() => {
+      if (promiseCompleted) {
+        return
+      }
+      currentPs.kill()
+      ps = undefined
+      promiseCompleted = true
+      reject(new Error(`Pomsky timed out after 30 seconds`))
+    }, 30_000)
   })
 }
