@@ -1,5 +1,6 @@
-import * as cp from 'node:child_process'
-import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { asyncSpawn, Spawned } from './utils/asyncSpawn'
+import * as os from 'node:os'
+import * as path from 'node:path'
 
 export interface PomskyJsonResponse {
   version: '1'
@@ -20,90 +21,35 @@ export interface PomskyJsonDiagnostic {
   visual: string
 }
 
-let ps: ChildProcessWithoutNullStreams | undefined
-const previousContent = new Map<string, string>()
+const previous = new Map<string, Spawned>()
+
+// hard-code ~/.cargo/bin, as directories such as /usr/bin are included automatically
+const PATH = path.resolve(os.homedir(), '.cargo/bin')
 
 export async function runPomsky(
   flavor: 'js',
   content: string,
   key: string,
-): Promise<PomskyJsonResponse | undefined> {
-  if (content === previousContent.get(key)) {
-    return
+): Promise<PomskyJsonResponse> {
+  const prevProcess = previous.get(key)
+  if (prevProcess !== undefined) {
+    prevProcess.kill()
+    previous.delete(key)
   }
-  previousContent.set(key, content)
 
-  let promiseCompleted = false
-
-  return new Promise((resolve, reject) => {
-    if (ps !== undefined) {
-      ps.kill()
-      ps = undefined
-    }
-
-    try {
-      ps = cp.spawn('pomsky', ['-f', flavor, '--json', content])
-    } catch (e) {
-      ps = undefined
-      promiseCompleted = true
-      return reject(e)
-    }
-
-    const currentPs = ps
-
-    let allOut = ''
-    let allErr = ''
-    ps.stdout.on('data', data => (allOut += data))
-    ps.stderr.on('data', data => (allErr += data))
-
-    ps.on('error', e => {
-      if (promiseCompleted) {
-        return
-      }
-      ps = undefined
-      promiseCompleted = true
-
-      if (e.message.includes('ENOENT')) {
-        reject(
-          new Error('Pomsky executable not found. Make sure the `pomsky` binary is in your PATH'),
-        )
-      } else {
-        reject(e)
-      }
-    })
-
-    ps.on('close', (code: number) => {
-      if (promiseCompleted) {
-        return
-      }
-      ps = undefined
-      promiseCompleted = true
-
-      if (code == null && currentPs.killed) {
-        resolve(undefined)
-      } else if (code !== 0 && code !== 1) {
-        reject(
-          new Error(
-            `Pomsky exited with non-zero status code: ${code}\n\nSTDOUT: ${allOut}\nSTDERR: ${allErr}`,
-          ),
-        )
-      } else {
-        try {
-          resolve(JSON.parse(allOut))
-        } catch {
-          reject(new Error(`Pomsky returned invalid JSON: ${allOut}`))
-        }
-      }
-    })
-
-    setTimeout(() => {
-      if (promiseCompleted) {
-        return
-      }
-      currentPs.kill()
-      ps = undefined
-      promiseCompleted = true
-      reject(new Error(`Pomsky timed out after 30 seconds`))
-    }, 30_000)
+  const process = asyncSpawn('pomsky', ['-f', flavor, '--json', content], {
+    expectedCodes: [0, 1],
+    timeout: 30_000,
+    env: { PATH },
   })
+  previous.set(key, process)
+
+  const { stdout } = await process.promise
+  previous.delete(key)
+
+  try {
+    return JSON.parse(stdout)
+  } catch {
+    throw new Error(`Pomsky returned invalid JSON: ${stdout}`)
+  }
 }

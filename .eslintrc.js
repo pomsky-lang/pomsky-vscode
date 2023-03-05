@@ -8,5 +8,9 @@ module.exports = {
   ignorePatterns: ['media', 'out'],
   rules: {
     semi: ['warn', 'never'],
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { vars: 'all', args: 'after-used', argsIgnorePattern: '_' },
+    ],
   },
 }

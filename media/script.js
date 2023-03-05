@@ -106,7 +106,9 @@ function setOutput({
   }
 }
 
-render(state)
+if (state != null) {
+  render(state)
+}
 
 function displayTime(/** @type {number} */ micros) {
   if (micros >= 1_000_000) {
