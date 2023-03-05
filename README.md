@@ -12,15 +12,14 @@ still in development and incomplete; expect some bugs.
 ## Features
 
 - Syntax highlighting
+- Underlined errors and warnings
+- Auto-completion of variables and character classes
 - Live preview of compiled expression
   - Right-click and select `Open compiled RegExp on the right` or click the icon in the top right
     corner
 
 Missing IDE features:
 
-- Autocomplete
-- Highlight errors/warnings directly in the source code (you can see them in the live preview for
-  now)
 - Go to definition / find usages / rename variable
 - Code formatting
 - Extend selection
@@ -31,9 +30,6 @@ Missing Regex-specific features:
 
 - Select regex flavor
 - Find and replace
-
-If you need a feature not yet provided by this extension, check out the
-[playground](https://playground.pomsky-lang.org/). It is more feature-complete at this point.
 
 ## Requirements
 
@@ -49,11 +45,12 @@ executable compiled to WASM, so no setup is needed.
 There aren't any settings yet. If you need something to be configurable, please
 [open an issue](https://github.com/pomsky-lang/pomsky-vscode/issues).
 
-<!--
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Occasionally, diagnostics (wavy underlines) don't get updated after a keypress. Making another
+change fixes this.
 
+<!--
 ## Release Notes
 
 Users appreciate release notes as you update your extension.
