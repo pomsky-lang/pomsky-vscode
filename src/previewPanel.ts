@@ -13,12 +13,14 @@ import {
 import { getNonce } from './nonce'
 import { singleton } from './singleton'
 import { PomskyJsonDiagnostic, runPomsky } from './pomskyCli'
+import { Flavor, getConfig } from './config'
 
 export interface State {
   fileName: string
   content: string
   compileResult?: CompileResult
   isCompiling: boolean
+  flavor: Flavor
 }
 
 export interface CompileResult {
@@ -166,16 +168,16 @@ function disposePanel(panel: WebviewPanel, disposables: Disposable[]) {
   panelSingleton.dispose()
 }
 
-function updatePanel(context: PanelContext) {
+function updatePanel(context: PanelContext, forceRefresh = false) {
   context.panel.webview.html = getHtmlForWebview(context)
-  updateContent(context)
+  updateContent(context, forceRefresh)
 }
 
-function updateContent(context: PanelContext) {
+function updateContent(context: PanelContext, forceRefresh = false) {
   const fileName = context.document?.fileName
   const content = context.document?.getText()
 
-  if (content === context.content) {
+  if (content === context.content && !forceRefresh) {
     // avoid multiple updates when the file content didn't change
     return
   }
@@ -193,7 +195,9 @@ function updateContent(context: PanelContext) {
       }
     }, 10)
 
-    runPomsky('js', context.content, '//preview')
+    const config = getConfig(context.document?.uri)
+
+    runPomsky(config, context.content, '//preview')
       .then(
         res => {
           if (res !== undefined) {
@@ -222,6 +226,7 @@ function updateContent(context: PanelContext) {
             content: context.content,
             compileResult: context.compileResult,
             isCompiling,
+            flavor: config.flavor,
           },
         } as Message)
       })

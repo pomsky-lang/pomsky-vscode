@@ -76,6 +76,45 @@
         "scopeName": "source.pomsky",
         "path": "./syntaxes/pomsky.tmLanguage.json"
       }
+    ],
+    "configuration": [
+      {
+        "title": "Pomsky",
+        "properties": {
+          "pomsky.exePath": {
+            "type": "string",
+            "default": "",
+            "description": "Path to the `pomsky` executable. When empty, the extension looks in your PATH.",
+            "examples": [
+              "/home/john/.cargo/bin/pomsky"
+            ],
+            "title": "Executable path"
+          },
+          "pomsky.defaultFlavor": {
+            "type": "string",
+            "default": "JavaScript",
+            "enum": [
+              "DotNet",
+              "JavaScript",
+              "Java",
+              "PCRE",
+              "Python",
+              "Rust",
+              "Ruby"
+            ],
+            "enumDescriptions": [
+              ".NET (C#) flavor",
+              "JavaScript (ECMAScript) flavor",
+              "Java flavor",
+              "PCRE flavor",
+              "Python `re` flavor",
+              "Rust `regex` flavor",
+              "Ruby (Oniguruma) flavor"
+            ],
+            "description": "Regex flavor to compile to"
+          }
+        }
+      }
     ]
   },
   "scripts": {

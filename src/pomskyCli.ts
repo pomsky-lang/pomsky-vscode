@@ -1,6 +1,7 @@
 import { asyncSpawn, Spawned } from './utils/asyncSpawn'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import { Config } from './config'
 
 export interface PomskyJsonResponse {
   version: '1'
@@ -27,7 +28,7 @@ const previous = new Map<string, Spawned>()
 const PATH = path.resolve(os.homedir(), '.cargo/bin')
 
 export async function runPomsky(
-  flavor: 'js',
+  { flavor, exePath }: Config,
   content: string,
   key: string,
 ): Promise<PomskyJsonResponse> {
@@ -37,11 +38,15 @@ export async function runPomsky(
     previous.delete(key)
   }
 
-  const process = asyncSpawn('pomsky', ['-f', flavor, '--json', content], {
-    expectedCodes: [0, 1],
-    timeout: 30_000,
-    env: { PATH },
-  })
+  const process = asyncSpawn(
+    exePath === '' ? 'pomsky' : exePath,
+    ['-f', flavor, '--json', content],
+    {
+      expectedCodes: [0, 1],
+      timeout: 30_000,
+      env: { PATH },
+    },
+  )
   previous.set(key, process)
 
   const { stdout } = await process.promise

@@ -5,7 +5,7 @@ const outputPre = document.getElementById('pre')
 const warningsDiv = document.getElementById('warnings')
 const diagnosticsPre = document.getElementById('diagnostics')
 
-const version = document.getElementById('version')
+const versionDiv = document.getElementById('version')
 const timingDiv = document.getElementById('timing')
 
 /**
@@ -42,6 +42,7 @@ function render(/** @type {State} */ state) {
         actualLength: compileResult.actualLength,
         timing: compileResult.timings?.all,
         isCompiling: state.isCompiling,
+        flavor: state.flavor,
       })
     } else {
       const errors = compileResult.diagnostics.filter(d => d.severity === 'error').length
@@ -62,6 +63,7 @@ function render(/** @type {State} */ state) {
         hasErrors: errors > 0,
         timing: compileResult.timings.all,
         isCompiling: state.isCompiling,
+        flavor: state.flavor,
       })
     }
   }
@@ -83,6 +85,7 @@ function setOutput({
   hasErrors = false,
   timing,
   isCompiling = false,
+  flavor,
 }) {
   exeErrorDiv.innerText = ''
   outputPre.textContent =
@@ -103,6 +106,12 @@ function setOutput({
     timingDiv.textContent = `compiling...`
   } else if (timing != null) {
     timingDiv.textContent = `compiled in ${displayTime(timing)}`
+  }
+
+  if (flavor) {
+    versionDiv.textContent = `Pomsky (${flavor} flavor)`
+  } else {
+    versionDiv.textContent = ''
   }
 }
 

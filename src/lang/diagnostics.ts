@@ -3,13 +3,15 @@ import {
   DiagnosticCollection,
   DiagnosticSeverity,
   DiagnosticTag,
+  Disposable,
   ExtensionContext,
   languages,
   Range,
-  TextEditor,
+  TextDocument,
   window,
   workspace,
 } from 'vscode'
+import { Config, getConfig } from '../config'
 import { runPomsky } from '../pomskyCli'
 
 interface DiagnosticsContext {
@@ -17,55 +19,70 @@ interface DiagnosticsContext {
 }
 
 export function activateDiagnostics(_context: ExtensionContext) {
+  const disposables: Disposable[] = []
   const coll = languages.createDiagnosticCollection('pomsky')
 
   const contents = new Map<string, string>()
   const context: DiagnosticsContext = { contents }
 
-  window.onDidChangeActiveTextEditor(e => {
-    if (e) {
-      analyze(coll, e, context)
-    }
-  })
+  window.onDidChangeActiveTextEditor(
+    editor => {
+      if (editor) {
+        analyze(getConfig(editor.document.uri), coll, editor.document, context)
+      }
+    },
+    null,
+    disposables,
+  )
+
+  workspace.onDidChangeTextDocument(
+    event => {
+      analyze(getConfig(event.document.uri), coll, event.document, context)
+    },
+    null,
+    disposables,
+  )
 
   if (window.activeTextEditor) {
-    analyze(coll, window.activeTextEditor, context)
+    analyze(
+      getConfig(window.activeTextEditor.document.uri),
+      coll,
+      window.activeTextEditor.document,
+      context,
+    )
   }
 }
 
-function analyze(coll: DiagnosticCollection, editor: TextEditor, context: DiagnosticsContext) {
-  if (!/\.pom(?:sky)?$/.test(editor.document.fileName)) {
+function analyze(
+  config: Config,
+  coll: DiagnosticCollection,
+  doc: TextDocument,
+  context: DiagnosticsContext,
+) {
+  if (!/\.pom(?:sky)?$/.test(doc.fileName)) {
     return
   }
 
-  workspace.onDidChangeTextDocument(event => {
-    if (event.document.fileName === editor.document.fileName) {
-      const content = event.document.getText()
-      if (content !== context.contents.get(editor.document.fileName)) {
-        context.contents.set(editor.document.fileName, content)
-        updateContent(coll, editor, content)
-      }
-    }
-  })
-
-  const content = editor.document.getText()
-  context.contents.set(editor.document.fileName, content)
-  updateContent(coll, editor, content)
+  const content = doc.getText()
+  context.contents.set(doc.fileName, content)
+  updateContent(config, coll, doc, content)
 }
 
-function updateContent(coll: DiagnosticCollection, editor: TextEditor, content: string) {
-  runPomsky('js', content, editor.document.fileName).then(res => {
+function updateContent(
+  config: Config,
+  coll: DiagnosticCollection,
+  doc: TextDocument,
+  content: string,
+) {
+  runPomsky(config, content, doc.fileName).then(res => {
     if (res) {
       if (res.diagnostics?.length) {
         coll.set(
-          editor.document.uri,
+          doc.uri,
           res.diagnostics.map(diagnostic => {
             const span = diagnostic.spans[0]
             const result = new Diagnostic(
-              new Range(
-                editor.document.positionAt(span.start),
-                editor.document.positionAt(span.end),
-              ),
+              new Range(doc.positionAt(span.start), doc.positionAt(span.end)),
               diagnostic.help?.length
                 ? `${diagnostic.description}\n\nhelp: ${diagnostic.help[0]}`
                 : diagnostic.description,
@@ -82,7 +99,7 @@ function updateContent(coll: DiagnosticCollection, editor: TextEditor, content: 
           }),
         )
       } else {
-        coll.set(editor.document.uri, [])
+        coll.set(doc.uri, [])
       }
     }
   })

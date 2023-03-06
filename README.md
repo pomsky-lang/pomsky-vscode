@@ -25,34 +25,30 @@ Missing IDE features:
 - Extend selection
 - Documentation tooltips
 - Quick fixes
-
-Missing Regex-specific features:
-
-- Select regex flavor
-- Find and replace
+- Compiled Regex: find and replace
 
 ## Requirements
 
 You need to have the `pomsky` executable installed locally. Get it from the
-[Releases](https://github.com/pomsky-lang/pomsky/releases) page, move it to a folder that's in your
-PATH, and rename it to `pomsky`.
+[Releases](https://github.com/pomsky-lang/pomsky/releases) page. Then you need to either
+
+- go to the settings, search for `pomsky.exePath` and enter the path to the executable, _or_
+
+- rename the executable to `pomsky` and move it to `/usr/bin` or `~/.cargo/bin` so it can be
+  detected automatically
 
 In the future we'll add a setting to specify a path to the executable. We might also embed an
 executable compiled to WASM, so no setup is needed.
 
 ## Extension Settings
 
-There aren't any settings yet. If you need something to be configurable, please
-[open an issue](https://github.com/pomsky-lang/pomsky-vscode/issues).
+There are currently 2 configurations:
 
-## Known Issues
+- `pomsky.exePath`: Points to the Pomsky executable
 
-Occasionally, diagnostics (wavy underlines) don't get updated after a keypress. Making another
-change fixes this.
+- `pomsky.defaultFlavor`: Specifies the default regex flavor.
 
-<!--
-## Release Notes
+## Issues
 
-Users appreciate release notes as you update your extension.
-
--->
+This extension is an alpha stage, so expect some bugs. Please report any problems you encounter
+[here](https://github.com/pomsky-lang/pomsky-vscode/issues)!
