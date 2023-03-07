@@ -28,7 +28,7 @@ const previous = new Map<string, Spawned>()
 const PATH = path.resolve(os.homedir(), '.cargo/bin')
 
 export async function runPomsky(
-  { flavor, exePath }: Config,
+  { flavor, exePath, exeArgs }: Config,
   content: string,
   key: string,
 ): Promise<PomskyJsonResponse> {
@@ -40,7 +40,7 @@ export async function runPomsky(
 
   const process = asyncSpawn(
     exePath === '' ? 'pomsky' : exePath,
-    ['-f', flavor, '--json', content],
+    ['-f', flavor, '--json', content, ...exeArgs],
     {
       expectedCodes: [0, 1],
       timeout: 30_000,

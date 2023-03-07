@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
@@ -81,16 +81,8 @@
       {
         "title": "Pomsky",
         "properties": {
-          "pomsky.exePath": {
-            "type": "string",
-            "default": "",
-            "description": "Path to the `pomsky` executable. When empty, the extension looks in your PATH.",
-            "examples": [
-              "/home/john/.cargo/bin/pomsky"
-            ],
-            "title": "Executable path"
-          },
           "pomsky.defaultFlavor": {
+            "title": "Default Regex Flavor",
             "type": "string",
             "default": "JavaScript",
             "enum": [
@@ -112,6 +104,24 @@
               "Ruby (Oniguruma) flavor"
             ],
             "description": "Regex flavor to compile to"
+          },
+          "pomsky.executable.path": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the `pomsky` executable. When empty, the extension looks in your `PATH`.",
+            "examples": [
+              "/home/john/.cargo/bin/pomsky"
+            ],
+            "title": "Executable path"
+          },
+          "pomsky.executable.extraArgs": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Additional arguments to pass to the `pomsky` executable, e.g. `-Wcompat=0 --allowed-features=`.\n\nArguments must be space-separated. They can't be quoted, but spaces can be escaped with `\\ `.",
+            "examples": [
+              "/home/john/.cargo/bin/pomsky"
+            ],
+            "title": "Extra CLI arguments"
           }
         }
       }

@@ -26,6 +26,8 @@ Missing IDE features:
 - Documentation tooltips
 - Quick fixes
 - Compiled Regex: find and replace
+- Select flavor in preview window
+- Show `pomsky --version`
 
 ## Requirements
 
@@ -42,11 +44,14 @@ executable compiled to WASM, so no setup is needed.
 
 ## Extension Settings
 
-There are currently 2 configurations:
+The following configurations are available:
 
-- `pomsky.exePath`: Points to the Pomsky executable
+- `pomsky.defaultFlavor`: Specifies the default regex flavor
 
-- `pomsky.defaultFlavor`: Specifies the default regex flavor.
+- `pomsky.executable.path`: Points to the Pomsky executable
+
+- `pomsky.executable.extraArgs`: Additional arguments to pass to `pomsky`. For example, setting it
+  to `-Wcompat=0` disables compatibility warnings.
 
 ## Issues
 
