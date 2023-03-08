@@ -29,7 +29,7 @@ window.addEventListener('message', (/** @type {{ data: Message }} */ { data }) =
 })
 
 function render(/** @type {State} */ state) {
-  if (state.compileResult) {
+  if (state?.compileResult) {
     const { compileResult } = state
     if (compileResult == null || (compileResult.exeError && state.isCompiling)) {
       setOutput({ isCompiling: state.isCompiling })

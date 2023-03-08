@@ -34,22 +34,12 @@ export function activate(context: ExtensionContext) {
     },
   }
 
-  // Create the language client and start the client.
   client = new LanguageClient('pomsky', 'Pomksy', serverOptions, clientOptions)
 
   activatePanel(context, client)
 
   // Start the client. This will also launch the server
   client.start()
-
-  client.onNotification('handler/compileResult', e => {
-    console.log('result:', e)
-  })
-
-  client.sendRequest('handler/compile', {
-    uri: 'file:///home/ludwig/something',
-    content: '^ . $',
-  })
 }
 
 export function deactivate(): Thenable<void> | undefined {

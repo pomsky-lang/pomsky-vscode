@@ -46,8 +46,6 @@ export function activatePanel(context: ExtensionContext, client: LanguageClient)
   if (window.registerWebviewPanelSerializer) {
     window.registerWebviewPanelSerializer(viewType, {
       async deserializeWebviewPanel(webviewPanel: WebviewPanel, state: unknown) {
-        // console.log(`Got state:`, state)
-
         // Reset the webview options so we use latest uri for `localResourceRoots`.
         webviewPanel.webview.options = getWebviewOptions(context.extensionUri)
         panelSingleton.dispose()
@@ -96,18 +94,19 @@ interface PanelContext {
 function initPanel(context: PanelContext) {
   const disposables: Disposable[] = []
 
-  updatePanel(context)
+  context.panel.webview.html = getHtmlForWebview(context)
+  updateContent(context, true)
+
   setPanelTitle(context)
 
-  // Listen for when the panel is disposed
-  // This happens when the user closes the panel or when the panel is closed programmatically
-  context.panel.onDidDispose(() => disposePanel(context.panel, disposables), null, disposables)
+  // Panel is disposed when the user closes the panel or when the panel is closed programmatically
+  context.panel.onDidDispose(() => disposePanel(context, disposables), null, disposables)
 
   // Update the content based on view changes
   context.panel.onDidChangeViewState(
     () => {
       if (context.panel.visible) {
-        updatePanel(context)
+        updateContent(context)
       }
     },
     null,
@@ -119,12 +118,12 @@ function initPanel(context: PanelContext) {
       if (
         editor &&
         editor.document.fileName !== context.document?.fileName &&
-        /\.pom(?:sky)?$/.test(editor.document.fileName)
+        editor.document.languageId === 'pomsky'
       ) {
         context.content = undefined
         context.document = editor.document
         setPanelTitle(context)
-        updatePanel(context)
+        updateContent(context)
       }
     },
     null,
@@ -154,27 +153,27 @@ function initPanel(context: PanelContext) {
     disposables,
   )
 
-  context.client.onNotification('handler/compileResult', (result: CompileResultHandler) => {
-    console.log(result)
+  disposables.push(
+    context.client.onNotification('handler/compileResult', (result: CompileResultHandler) => {
+      context.compileResult = {
+        output: trimLength(result.output, 100_000),
+        actualLength: result.output?.length,
+        diagnostics: result.diagnostics,
+        timings: result.timings,
+      }
 
-    context.compileResult = {
-      output: trimLength(result.output, 100_000),
-      actualLength: result.output?.length,
-      diagnostics: result.diagnostics,
-      timings: result.timings,
-    }
-
-    context.panel.webview.postMessage({
-      setState: {
-        fileName: result.uri,
-        content: context.content,
-        compileResult: context.compileResult,
-        isCompiling: false,
-        flavor: result.flavor,
-        versionInfo: result.versionInfo,
-      },
-    } as Message)
-  })
+      context.panel.webview.postMessage({
+        setState: {
+          fileName: result.uri,
+          content: context.content,
+          compileResult: context.compileResult,
+          isCompiling: false,
+          flavor: result.flavor,
+          versionInfo: result.versionInfo,
+        },
+      } as Message)
+    }),
+  )
 }
 
 function setPanelTitle(context: PanelContext) {
@@ -188,16 +187,11 @@ function setPanelTitle(context: PanelContext) {
   }
 }
 
-function disposePanel(panel: WebviewPanel, disposables: Disposable[]) {
-  panel.dispose()
+function disposePanel(context: PanelContext, disposables: Disposable[]) {
+  context.panel.dispose()
   disposables.forEach(d => d.dispose())
   disposables.length = 0
   panelSingleton.dispose()
-}
-
-function updatePanel(context: PanelContext, forceRefresh = false) {
-  context.panel.webview.html = getHtmlForWebview(context)
-  updateContent(context, forceRefresh)
 }
 
 function updateContent(context: PanelContext, forceRefresh = false) {
