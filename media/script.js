@@ -14,6 +14,7 @@ const timingDiv = document.getElementById('timing')
 
 /** @type {State} */
 let state = vscode.getState()
+let dirty = false
 
 window.addEventListener('message', (/** @type {{ data: Message }} */ { data }) => {
   if ('setState' in data) {
@@ -23,12 +24,25 @@ window.addEventListener('message', (/** @type {{ data: Message }} */ { data }) =
       state = {}
     }
     state.isCompiling = data.setCompiling
+    if (state.compileResult?.timings) {
+      dirty = true
+      vscode.setState(state)
+      // defer rendering to avoid flickering while typing
+      setTimeout(() => {
+        if (dirty) {
+          render(vscode.getState())
+        }
+      }, 30)
+      return
+    }
   }
   vscode.setState(state)
   render(state)
 })
 
 function render(/** @type {State} */ state) {
+  dirty = false
+
   if (state?.compileResult) {
     const { compileResult } = state
     if (compileResult == null || (compileResult.exeError && state.isCompiling)) {
