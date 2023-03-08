@@ -7,9 +7,9 @@ import {
   TextDocuments,
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { charSetCompletions, globalCompletions, lookupDocumentation } from './lang/snippets'
-import { findClosestTokenIndex, isInCharacterSet, tokenizePomsky } from './lang/tokenizePomsky'
-import { connection } from './state'
+import { charSetCompletions, globalCompletions, lookupDocumentation } from './snippets'
+import { findClosestTokenIndex, isInCharacterSet, tokenizePomsky } from './tokenizePomsky'
+import { connection } from '../state'
 
 export function initCompletion(documents: TextDocuments<TextDocument>) {
   // Provides the initial list of the completion items

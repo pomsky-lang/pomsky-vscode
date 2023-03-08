@@ -9,11 +9,12 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import * as fs from 'node:fs'
 
-import { getDocumentSettings } from './config'
-import { runPomsky } from './lang/pomskyCli'
-import { connection } from './state'
-import { NoExeError } from './util/asyncSpawn'
-import { Config } from './types/config'
+import { getDocumentSettings } from '../config'
+import { runPomsky } from './pomskyCli'
+import { connection } from '../state'
+import { NoExeError } from '../util/asyncSpawn'
+import { Config } from '../types/config'
+import { TextDecoder, TextEncoder } from 'node:util'
 
 export function initDiagnostics(documents: TextDocuments<TextDocument>) {
   // when the text document first opened or when its content has changed.
@@ -36,13 +37,23 @@ export async function validateTextDocument(textDocument: TextDocument): Promise<
 
   try {
     const res = await runPomsky(settings, text, textDocument.uri)
-    const diagnostics: Diagnostic[] = res.diagnostics.map(pd => {
+
+    const encoded = res.diagnostics.length ? new TextEncoder().encode(text) : undefined
+
+    const diagnostics = res.diagnostics.map(pd => {
       const span = pd.spans[0]
-      return {
+      const sliceBefore = encoded!.slice(0, span.start)
+      const sliceInner = encoded!.slice(span.start, span.end)
+
+      // convert UTF-8 byte offsets to UTF-16 code unit offsets
+      const start = new TextDecoder().decode(sliceBefore).length
+      const end = start + new TextDecoder().decode(sliceInner).length
+
+      return <Diagnostic>{
         severity: pd.severity === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
         range: {
-          start: textDocument.positionAt(span.start),
-          end: textDocument.positionAt(span.end),
+          start: textDocument.positionAt(start),
+          end: textDocument.positionAt(end),
         },
         message: pd.help?.length ? `${pd.description}\n\nhelp: ${pd.help[0]}` : pd.description,
         source: 'pomsky',

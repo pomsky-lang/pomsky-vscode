@@ -11,8 +11,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument'
 
 import { documentSettings, getDocumentSettings, initConfig } from './config'
 import { capabilities, connection, setCapabilities, setConnection } from './state'
-import { initCompletion } from './completion'
-import { initDiagnostics, validateTextDocument } from './diagnostics'
+import { initCompletion } from './lang/completion'
+import { initDiagnostics, validateTextDocument } from './lang/diagnostics'
 import { pomskyVersion, runPomsky } from './lang/pomskyCli'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
 
