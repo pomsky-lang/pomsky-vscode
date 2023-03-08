@@ -106,13 +106,13 @@ function parseExtraArgs(args?: string): string[] {
     .filter(s => s !== '')
 }
 
-async function handleCliError(e: Error, connection: Connection, uri: string) {
+async function handleCliError(e: Error, connection: Connection, key: string) {
   if (e instanceof NoExeError) {
     // only report this error once
-    if (invalidExeReported.has(uri)) {
+    if (invalidExeReported.has(key)) {
       return
     }
-    invalidExeReported.set(uri, true)
+    invalidExeReported.set(key, true)
 
     connection.sendNotification(ShowMessageNotification.type, {
       message: `Couldn't find the '${e.command}' executable!

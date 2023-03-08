@@ -202,8 +202,10 @@ function disposePanel(context: PanelContext, disposables: Disposable[]) {
 }
 
 function updateContent(context: PanelContext, forceRefresh = false) {
-  const uri = context.document?.uri
-  const content = context.document?.getText()
+  if (!context.document) return
+
+  const uri = context.document.uri
+  const content = context.document.getText()
 
   if (content === context.content && !forceRefresh) {
     // avoid multiple updates when the file content didn't change
@@ -218,7 +220,11 @@ function updateContent(context: PanelContext, forceRefresh = false) {
 
     context.client.sendRequest('handler/compile', {
       content,
-      uri: uri?.toString() ?? 'global:',
+      // Without the query parameter, some requests would be dropped, because a CLI process is
+      // cancelled when a new process for the same URI is spawned. This causes problems because the
+      // CLI is invoked for both diagnostics and the preview. This query parameter ensures they
+      // don't interfere with one another
+      uri: `${uri.toString()}?preview`,
     } satisfies CompileHandler)
   }
 }

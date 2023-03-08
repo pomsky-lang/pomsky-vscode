@@ -137,6 +137,21 @@ atomic('bc' | 'b') 'c'
 
 [Reference](https://www.regular-expressions.info/atomic.html)`,
   },
+  regex: {
+    snippet: "regex '${0:(?0)}'",
+    doc: `Inline regular expressions are embedded in the output unchanged.
+They're useful when you want to use a regex feature that isn't supported by Pomsky yet.
+
+This should only be used as a last resort, since Pomsky can't ensure that the output is correct.
+
+### Example:
+~~~pomsky
+# recursion, works in PCRE and Ruby
+let recurse = regex '\\g<0>';
+~~~
+
+[Reference](https://pomsky-lang.org/docs/language-tour/regex/)`,
+  },
 })
 
 addCompletions(CompletionContext.Stmt, 'snippet', CompletionItemKind.Value, {
