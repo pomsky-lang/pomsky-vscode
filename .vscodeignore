@@ -1,4 +1,12 @@
 .vscode/**
-.vscode-test/**
 .gitignore
-vsc-extension-quickstart.md
+*.vsix
+types
+
+**/*.ts
+**/*.js.map
+**/*.tsbuildinfo
+**/.github
+**/node_modules/**/*.md
+**/node_modules/**/LICENSE.md
+**/node_modules/**/License.txt

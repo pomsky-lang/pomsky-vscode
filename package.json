@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
