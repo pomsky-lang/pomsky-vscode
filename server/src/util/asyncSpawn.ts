@@ -49,7 +49,7 @@ export function asyncSpawn(
         promiseCompleted = true
 
         if (e.message.includes('ENOENT')) {
-          reject(new Error(`executable '${command}' not found. Make sure it's in your PATH!`))
+          reject(new NoExeError(command))
         } else {
           reject(e)
         }
@@ -85,5 +85,11 @@ export function asyncSpawn(
         }, timeout)
       }
     }),
+  }
+}
+
+export class NoExeError extends Error {
+  constructor(public readonly command: string) {
+    super(`executable '${command}' not found. Make sure it's in your PATH!`)
   }
 }

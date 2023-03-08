@@ -2,15 +2,14 @@ const vscode = acquireVsCodeApi()
 
 const exeErrorDiv = document.getElementById('exeError')
 const outputPre = document.getElementById('pre')
-const warningsDiv = document.getElementById('warnings')
-const diagnosticsPre = document.getElementById('diagnostics')
+const diagnosticsDetails = document.getElementById('diagnostics')
 
 const versionDiv = document.getElementById('version')
 const timingDiv = document.getElementById('timing')
 
 /**
- * @typedef {import('../src/previewPanel').Message} Message
- * @typedef {import('../src/previewPanel').State} State
+ * @typedef {import('../client/src/previewPanel').Message} Message
+ * @typedef {import('../client/src/previewPanel').State} State
  */
 
 /** @type {State} */
@@ -43,6 +42,7 @@ function render(/** @type {State} */ state) {
         timing: compileResult.timings?.all,
         isCompiling: state.isCompiling,
         flavor: state.flavor,
+        versionInfo: state.versionInfo,
       })
     } else {
       const errors = compileResult.diagnostics.filter(d => d.severity === 'error').length
@@ -64,6 +64,7 @@ function render(/** @type {State} */ state) {
         timing: compileResult.timings.all,
         isCompiling: state.isCompiling,
         flavor: state.flavor,
+        versionInfo: state.versionInfo,
       })
     }
   }
@@ -72,8 +73,7 @@ function render(/** @type {State} */ state) {
 function setExeError(error) {
   exeErrorDiv.innerText = error
   outputPre.textContent = ''
-  warningsDiv.textContent = ''
-  diagnosticsPre.textContent = ''
+  diagnosticsDetails.textContent = ''
   timingDiv.textContent = ''
 }
 
@@ -86,6 +86,7 @@ function setOutput({
   timing,
   isCompiling = false,
   flavor,
+  versionInfo,
 }) {
   exeErrorDiv.innerText = ''
   outputPre.textContent =
@@ -93,13 +94,19 @@ function setOutput({
       ? `${output}\n\nOutput is too big to display! Only the first ${output.length} code units are shown. The actual length is ${actualLength}`
       : output
 
-  warningsDiv.textContent = warningsLabel
-  diagnosticsPre.textContent = diagnostics
+  diagnosticsDetails.innerHTML = ''
+  if (diagnostics !== '') {
+    const warningsSummary = document.createElement('summary')
+    if (hasErrors) {
+      warningsSummary.classList.add('errors')
+    }
+    warningsSummary.id = 'warnings'
+    warningsSummary.textContent = warningsLabel
 
-  if (hasErrors) {
-    warningsDiv.classList.add('errors')
-  } else {
-    warningsDiv.classList.remove('errors')
+    const diagnosticsPre = document.createElement('pre')
+    diagnosticsPre.textContent = diagnostics
+
+    diagnosticsDetails.append(warningsSummary, diagnosticsPre)
   }
 
   if (isCompiling) {
@@ -109,7 +116,7 @@ function setOutput({
   }
 
   if (flavor) {
-    versionDiv.textContent = `Pomsky (${flavor} flavor)`
+    versionDiv.textContent = `${versionInfo ?? 'Pomsky'} (${flavor} flavor)`
   } else {
     versionDiv.textContent = ''
   }

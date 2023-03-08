@@ -8,6 +8,22 @@
     "type": "git",
     "url": "https://github.com/pomsky-lang/pomsky-vscode"
   },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.70.0",
+    "@types/vscode-webview": "^1.57.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "typescript": "^4.9.5"
+  },
   "readme": "README.md",
   "homepage": "https://pomsky-lang.org/",
   "funding": {
@@ -22,11 +38,14 @@
   "categories": [
     "Programming Languages"
   ],
+  "keywords": [
+    "multi-root ready"
+  ],
   "activationEvents": [
     "onWebviewPanel:viewType",
     "onWebviewPanel:pomskyPreview"
   ],
-  "main": "./out/extension.js",
+  "main": "./client/out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -126,20 +145,5 @@
         }
       }
     ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "lint": "eslint \"src/**/*.ts\"",
-    "watch": "tsc -w -p ./"
-  },
-  "devDependencies": {
-    "@types/node": "^16.11.7",
-    "@types/vscode": "^1.70.0",
-    "@types/vscode-webview": "^1.57.0",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
-    "eslint": "^8.35.0",
-    "typescript": "^4.9.5"
   }
 }

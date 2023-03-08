@@ -1,0 +1,19 @@
+{
+  "name": "pomsky-lsp-server",
+  "version": "0.1.0",
+  "description": "LSP server for pomsky-lang",
+  "publisher": "pomsky-lang",
+  "scripts": {},
+  "license": "(MIT OR Apache-2.0)",
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pomsky-lang/pomsky-vscode"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^7.0.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
+  }
+}

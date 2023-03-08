@@ -10,10 +10,12 @@ import {
   window,
   workspace,
 } from 'vscode'
+import { LanguageClient } from 'vscode-languageclient/node'
 import { getNonce } from './nonce'
 import { singleton } from './singleton'
-import { PomskyJsonDiagnostic, runPomsky } from './pomskyCli'
-import { Flavor, getConfig } from './config'
+import { CompileHandler, CompileResultHandler } from './types/compileHandler'
+import { Flavor } from './types/config'
+import { PomskyJsonDiagnostic } from './types/pomskyCli'
 
 export interface State {
   fileName: string
@@ -21,6 +23,7 @@ export interface State {
   compileResult?: CompileResult
   isCompiling: boolean
   flavor: Flavor
+  versionInfo?: string
 }
 
 export interface CompileResult {
@@ -33,10 +36,10 @@ export interface CompileResult {
 
 export type Message = { setState: State } | { setCompiling: boolean }
 
-export function activatePanel(context: ExtensionContext) {
+export function activatePanel(context: ExtensionContext, client: LanguageClient) {
   context.subscriptions.push(
     commands.registerCommand('pomsky.openPreview', () => {
-      panelSingleton.getOrInit(context.extensionUri)
+      panelSingleton.getOrInit(context.extensionUri, client)
     }),
   )
 
@@ -48,7 +51,7 @@ export function activatePanel(context: ExtensionContext) {
         // Reset the webview options so we use latest uri for `localResourceRoots`.
         webviewPanel.webview.options = getWebviewOptions(context.extensionUri)
         panelSingleton.dispose()
-        panelSingleton.getOrInit(context.extensionUri, webviewPanel)
+        panelSingleton.getOrInit(context.extensionUri, client, webviewPanel)
 
         webviewPanel.webview.postMessage({ setState: state } as Message)
       },
@@ -59,7 +62,7 @@ export function activatePanel(context: ExtensionContext) {
 const viewType = 'pomsky.preview'
 const defaultColumn = ViewColumn.Beside
 
-const panelSingleton = singleton((extUri: Uri, panel?: WebviewPanel) => {
+const panelSingleton = singleton((extUri: Uri, client: LanguageClient, panel?: WebviewPanel) => {
   if (panel) {
     panel.reveal(defaultColumn)
   } else {
@@ -70,6 +73,7 @@ const panelSingleton = singleton((extUri: Uri, panel?: WebviewPanel) => {
     extUri,
     panel,
     document: window.activeTextEditor?.document,
+    client,
   })
   return panel
 })
@@ -82,6 +86,7 @@ const getWebviewOptions = (extUri: Uri): WebviewOptions => ({
 
 interface PanelContext {
   extUri: Uri
+  client: LanguageClient
   panel: WebviewPanel
   document?: TextDocument
   content?: string
@@ -148,6 +153,28 @@ function initPanel(context: PanelContext) {
     null,
     disposables,
   )
+
+  context.client.onNotification('handler/compileResult', (result: CompileResultHandler) => {
+    console.log(result)
+
+    context.compileResult = {
+      output: trimLength(result.output, 100_000),
+      actualLength: result.output?.length,
+      diagnostics: result.diagnostics,
+      timings: result.timings,
+    }
+
+    context.panel.webview.postMessage({
+      setState: {
+        fileName: result.uri,
+        content: context.content,
+        compileResult: context.compileResult,
+        isCompiling: false,
+        flavor: result.flavor,
+        versionInfo: result.versionInfo,
+      },
+    } as Message)
+  })
 }
 
 function setPanelTitle(context: PanelContext) {
@@ -174,7 +201,7 @@ function updatePanel(context: PanelContext, forceRefresh = false) {
 }
 
 function updateContent(context: PanelContext, forceRefresh = false) {
-  const fileName = context.document?.fileName
+  const uri = context.document?.uri
   const content = context.document?.getText()
 
   if (content === context.content && !forceRefresh) {
@@ -183,53 +210,12 @@ function updateContent(context: PanelContext, forceRefresh = false) {
   }
   context.content = content
 
-  if (context.content !== undefined) {
-    let completed = false
-    let isCompiling = true
+  if (content !== undefined) {
+    context.panel.webview.postMessage({
+      setCompiling: true,
+    } as Message)
 
-    setTimeout(() => {
-      if (!completed) {
-        context.panel.webview.postMessage({
-          setCompiling: isCompiling,
-        } as Message)
-      }
-    }, 10)
-
-    const config = getConfig(context.document?.uri)
-
-    runPomsky(config, context.content, '//preview')
-      .then(
-        res => {
-          if (res !== undefined) {
-            // isCompiling is only set to `false` if `res` is defined!
-            isCompiling = false
-            context.compileResult = {
-              output: trimLength(res.output, 100_000),
-              actualLength: res.output?.length,
-              diagnostics: res.diagnostics,
-              timings: res.timings,
-            }
-          }
-        },
-        (e: Error) => {
-          isCompiling = false
-          completed = true
-          context.compileResult = { exeError: e.message }
-        },
-      )
-      .finally(() => {
-        completed = true
-
-        context.panel.webview.postMessage({
-          setState: {
-            fileName,
-            content: context.content,
-            compileResult: context.compileResult,
-            isCompiling,
-            flavor: config.flavor,
-          },
-        } as Message)
-      })
+    context.client.sendRequest('handler/compile', { content, uri } as CompileHandler)
   }
 }
 
@@ -255,8 +241,7 @@ function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
     <div id="exeError"></div>
     <pre id="pre"></pre>
 
-    <div id="warnings"></div>
-    <pre id="diagnostics"></pre>
+    <details id="diagnostics"></details>
 
     <div id="footer">
       <div id="version"></div>

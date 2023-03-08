@@ -1,4 +1,4 @@
-import { err } from '../utils/err'
+import { err } from '../util/err'
 
 const IS_ASCII_DIGIT = /[0-9]/u
 const NO_ASCII_HEXDIGIT = /[^0-9a-fA-F]/u
@@ -40,7 +40,9 @@ interface TokenError {
   error: string
 }
 
-export function tokenizePomsky(input: string): [Token | TokenError, number, number][] {
+type TokenOrError = Token | TokenError
+
+export function tokenizePomsky(input: string): [TokenOrError, number, number][] {
   const result: [Token | TokenError, number, number][] = []
   let offset = 0
 
@@ -65,7 +67,7 @@ export function tokenizePomsky(input: string): [Token | TokenError, number, numb
 }
 
 const singleTokens: { [token: string]: Token | TokenError } = {
-  '$': 'Dollar',
+  $: 'Dollar',
   '^': 'Caret',
   '%': 'BWord',
   '*': 'Star',

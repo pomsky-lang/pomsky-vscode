@@ -10,7 +10,8 @@ module.exports = {
     semi: ['warn', 'never'],
     '@typescript-eslint/no-unused-vars': [
       'warn',
-      { vars: 'all', args: 'after-used', argsIgnorePattern: '_' },
+      { vars: 'all', args: 'after-used', argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
     ],
+    '@typescript-eslint/no-non-null-assertion': 'off',
   },
 }
