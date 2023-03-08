@@ -7,7 +7,7 @@
 </div>
 
 The official extension for the [Pomsky](https://pomsky-lang.org) regular expression language. It is
-still in development and incomplete; expect some bugs.
+still in development and lacks some features.
 
 ## Features
 
@@ -27,7 +27,6 @@ Missing IDE features:
 - Quick fixes
 - Compiled Regex: find and replace
 - Select flavor in preview window
-- Show `pomsky --version`
 
 ## Requirements
 

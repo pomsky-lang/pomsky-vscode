@@ -5,5 +5,7 @@ export interface Config {
   executable: {
     path: string
     extraArgs: string
+    appearsValid?: boolean
+    errorMsg?: string
   }
 }

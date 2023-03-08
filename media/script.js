@@ -1,6 +1,5 @@
 const vscode = acquireVsCodeApi()
 
-const exeErrorDiv = document.getElementById('exeError')
 const outputPre = document.getElementById('pre')
 const diagnosticsDetails = document.getElementById('diagnostics')
 
@@ -13,16 +12,13 @@ const timingDiv = document.getElementById('timing')
  */
 
 /** @type {State} */
-let state = vscode.getState()
+let state = vscode.getState() ?? {}
 let dirty = false
 
 window.addEventListener('message', (/** @type {{ data: Message }} */ { data }) => {
   if ('setState' in data) {
     state = data.setState
   } else if ('setCompiling' in data) {
-    if (state == null) {
-      state = {}
-    }
     state.isCompiling = data.setCompiling
     if (state.compileResult?.timings) {
       dirty = true
@@ -30,11 +26,15 @@ window.addEventListener('message', (/** @type {{ data: Message }} */ { data }) =
       // defer rendering to avoid flickering while typing
       setTimeout(() => {
         if (dirty) {
-          render(vscode.getState())
+          render(vscode.getState() ?? {})
         }
       }, 30)
       return
     }
+  } else if ('setError' in data) {
+    state.isCompiling = false
+    state.compileResult = undefined
+    state.versionInfo = undefined
   }
   vscode.setState(state)
   render(state)
@@ -45,10 +45,8 @@ function render(/** @type {State} */ state) {
 
   if (state?.compileResult) {
     const { compileResult } = state
-    if (compileResult == null || (compileResult.exeError && state.isCompiling)) {
+    if (compileResult == null) {
       setOutput({ isCompiling: state.isCompiling })
-    } else if (compileResult.exeError) {
-      setExeError(compileResult.exeError)
     } else if (compileResult.diagnostics == null || compileResult.diagnostics.length === 0) {
       setOutput({
         output: compileResult.output ?? '',
@@ -81,14 +79,9 @@ function render(/** @type {State} */ state) {
         versionInfo: state.versionInfo,
       })
     }
+  } else {
+    clearOutput()
   }
-}
-
-function setExeError(error) {
-  exeErrorDiv.innerText = error
-  outputPre.textContent = ''
-  diagnosticsDetails.textContent = ''
-  timingDiv.textContent = ''
 }
 
 function setOutput({
@@ -102,7 +95,6 @@ function setOutput({
   flavor,
   versionInfo,
 }) {
-  exeErrorDiv.innerText = ''
   outputPre.textContent =
     actualLength > output.length
       ? `${output}\n\nOutput is too big to display! Only the first ${output.length} code units are shown. The actual length is ${actualLength}`
@@ -125,8 +117,10 @@ function setOutput({
 
   if (isCompiling) {
     timingDiv.textContent = `compiling...`
+    timingDiv.classList.add('compiling')
   } else if (timing != null) {
     timingDiv.textContent = `compiled in ${displayTime(timing)}`
+    timingDiv.classList.remove('compiling')
   }
 
   if (flavor) {
@@ -134,6 +128,13 @@ function setOutput({
   } else {
     versionDiv.textContent = ''
   }
+}
+
+function clearOutput() {
+  outputPre.textContent = ''
+  diagnosticsDetails.textContent = ''
+  timingDiv.textContent = ''
+  versionDiv.textContent = ''
 }
 
 if (state != null) {

@@ -52,7 +52,7 @@ export function initCompletion(documents: TextDocuments<TextDocument>) {
                   label: v,
                   detail: 'variable',
                   kind: CompletionItemKind.Variable,
-                } as CompletionItem),
+                } satisfies CompletionItem as CompletionItem),
             ),
             ...globalCompletions,
           ]

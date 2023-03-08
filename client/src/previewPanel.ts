@@ -28,13 +28,12 @@ export interface State {
 
 export interface CompileResult {
   output?: string
-  exeError?: string
   diagnostics?: PomskyJsonDiagnostic[]
   timings?: { all: number }
   actualLength?: number
 }
 
-export type Message = { setState: State } | { setCompiling: boolean }
+export type Message = { setState: State } | { setCompiling: boolean } | { setError: boolean }
 
 export function activatePanel(context: ExtensionContext, client: LanguageClient) {
   context.subscriptions.push(
@@ -154,25 +153,33 @@ function initPanel(context: PanelContext) {
   )
 
   disposables.push(
-    context.client.onNotification('handler/compileResult', (result: CompileResultHandler) => {
-      context.compileResult = {
-        output: trimLength(result.output, 100_000),
-        actualLength: result.output?.length,
-        diagnostics: result.diagnostics,
-        timings: result.timings,
-      }
+    context.client.onNotification(
+      'handler/compileResult',
+      (result: CompileResultHandler | 'error') => {
+        if (result === 'error') {
+          context.panel.webview.postMessage({ setError: true } as Message)
+          return
+        }
 
-      context.panel.webview.postMessage({
-        setState: {
-          fileName: result.uri,
-          content: context.content,
-          compileResult: context.compileResult,
-          isCompiling: false,
-          flavor: result.flavor,
-          versionInfo: result.versionInfo,
-        },
-      } as Message)
-    }),
+        context.compileResult = {
+          output: trimLength(result.output, 100_000),
+          actualLength: result.output?.length,
+          diagnostics: result.diagnostics,
+          timings: result.timings,
+        }
+
+        context.panel.webview.postMessage({
+          setState: {
+            fileName: result.uri,
+            content: context.content ?? '',
+            compileResult: context.compileResult,
+            isCompiling: false,
+            flavor: result.flavor,
+            versionInfo: result.versionInfo,
+          },
+        } satisfies Message)
+      },
+    ),
   )
 }
 
@@ -207,9 +214,12 @@ function updateContent(context: PanelContext, forceRefresh = false) {
   if (content !== undefined) {
     context.panel.webview.postMessage({
       setCompiling: true,
-    } as Message)
+    } satisfies Message)
 
-    context.client.sendRequest('handler/compile', { content, uri } as CompileHandler)
+    context.client.sendRequest('handler/compile', {
+      content,
+      uri: uri?.toString() ?? 'global:',
+    } satisfies CompileHandler)
   }
 }
 
@@ -232,9 +242,7 @@ function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
     <title>Pomsky Preview</title>
   </head>
   <body>
-    <div id="exeError"></div>
     <pre id="pre"></pre>
-
     <details id="diagnostics"></details>
 
     <div id="footer">

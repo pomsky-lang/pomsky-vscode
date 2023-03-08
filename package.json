@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
@@ -126,10 +126,11 @@
           },
           "pomsky.executable.path": {
             "type": "string",
-            "default": "",
-            "markdownDescription": "Path to the `pomsky` executable. When empty, the extension looks in your `PATH`.",
+            "default": "pomsky",
+            "pattern": "^(?!\\.\\.?/)",
+            "markdownDescription": "Path to the `pomsky` executable.\n\nWhen this is just a file name, the extension looks in `~/.cargo/bin` and your `PATH`, but ignores your shell configuration.",
             "examples": [
-              "/home/john/.cargo/bin/pomsky"
+              "~/.cargo/bin/pomsky"
             ],
             "title": "Executable path"
           },

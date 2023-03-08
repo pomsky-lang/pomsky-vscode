@@ -2,7 +2,7 @@ import { Flavor } from './config'
 import { PomskyJsonResponse } from './pomskyCli'
 
 export interface CompileHandler {
-  uri?: string
+  uri: string
   content: string
 }
 

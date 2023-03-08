@@ -13,7 +13,7 @@ import { documentSettings, getDocumentSettings, initConfig } from './config'
 import { capabilities, connection, setCapabilities, setConnection } from './state'
 import { initCompletion } from './lang/completion'
 import { initDiagnostics, validateTextDocument } from './lang/diagnostics'
-import { pomskyVersion, runPomsky } from './lang/pomskyCli'
+import { pomskyVersion, runPomskyWithErrorHandler } from './lang/pomskyCli'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
 
 setConnection(createConnection(ProposedFeatures.all))
@@ -61,16 +61,21 @@ documents.onDidClose(e => {
   documentSettings.delete(e.document.uri)
 })
 
-connection.onRequest('handler/compile', async (handler: CompileHandler) => {
-  const settings = await getDocumentSettings(handler.uri ?? null)
-  const res = await runPomsky(settings, handler.content, handler.uri ?? 'global:')
+connection.onRequest('handler/compile', async ({ uri, content }: CompileHandler) => {
+  const settings = await getDocumentSettings(uri)
+  const res = await runPomskyWithErrorHandler(connection, { uri, getText: () => content }, settings)
+  if (res === undefined) {
+    connection.sendNotification('handler/compileResult', 'error')
+    return
+  }
   const versionInfo = await pomskyVersion(settings)
 
   connection.sendNotification('handler/compileResult', {
     ...res,
     flavor: settings.defaultFlavor,
+    uri,
     versionInfo,
-  } as CompileResultHandler)
+  } satisfies CompileResultHandler)
 })
 
 documents.listen(connection)

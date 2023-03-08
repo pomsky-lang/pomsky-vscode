@@ -35,13 +35,6 @@ pre {
   box-sizing: border-box;
 }
 
-#exeError {
-  padding: 0.3rem 0.7rem;
-  background-color: var(--vscode-inputValidation-errorBackground);
-  border: 1px solid var(--vscode-inputValidation-errorBorder);
-  border-width: 1px 0;
-}
-
 #warnings {
   padding: 0.5rem 1rem;
   font-size: 1.33rem;
@@ -53,7 +46,6 @@ pre {
 }
 
 #pre:empty,
-#exeError:empty,
 #diagnostics:empty {
   display: none;
 }
@@ -66,11 +58,33 @@ pre {
   bottom: 0;
   background: var(--vscode-breadcrumb-background);
   border: 1px solid var(--vscode-editorGroup-border);
-  padding: 0.2rem 0.75rem;
+  padding: 0.3rem 0.75rem;
   border-width: 1px 0 0 0;
 }
 
-#footer #timing {
+#timing {
   flex-grow: 1;
   text-align: right;
+}
+
+#timing.compiling::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--vscode-disabledForeground);
+  border-radius: 100%;
+  border-bottom-color: transparent;
+  margin-left: 10px;
+  vertical-align: -2px;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
