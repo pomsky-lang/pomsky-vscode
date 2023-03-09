@@ -12,16 +12,13 @@ import { activatePanel } from './previewPanel'
 let client: LanguageClient
 
 export function activate(context: ExtensionContext) {
-  const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'))
+  const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
   const serverOptions: ServerOptions = {
     run: { module: serverModule, transport: TransportKind.ipc },
-    debug: {
-      module: serverModule,
-      transport: TransportKind.ipc,
-    },
+    debug: { module: serverModule, transport: TransportKind.ipc },
   }
 
   // Options to control the language client

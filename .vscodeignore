@@ -1,12 +1,14 @@
-.vscode/**
-.gitignore
-*.vsix
+.vscode
+client
+server
 types
 
-**/*.ts
-**/*.js.map
-**/*.tsbuildinfo
-**/.github
-**/node_modules/**/*.md
-**/node_modules/**/LICENSE.md
-**/node_modules/**/License.txt
+.*ignore
+.editorconfig
+.eslintrc*
+.prettierrc*
+.gitattributes
+tsconfig.json
+*.vsix
+
+dist/*.js.map
