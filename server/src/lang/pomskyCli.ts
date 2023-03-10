@@ -4,7 +4,7 @@ import { Connection, MessageType, ShowMessageNotification } from 'vscode-languag
 import { getDocumentSettings, invalidExeReported } from '../config'
 import { Config } from '../types/config'
 import { PomskyJsonResponse } from '../types/pomskyCli'
-import { asyncSpawn, NoExeError, Spawned } from '../util/asyncSpawn'
+import { asyncSpawn, NoAccessError, NoExeError, Spawned } from '../util/asyncSpawn'
 
 const previous = new Map<string, Spawned>()
 
@@ -85,14 +85,33 @@ export async function runPomsky(
   }
 }
 
-export async function pomskyVersion({ executable }: Config): Promise<string> {
-  const process = asyncSpawn(executable.path || 'pomsky', ['--version'], {
-    timeout: 2_000,
-    env: { PATH },
-  })
+export function cancelPomsky(key: string) {
+  const prevProcess = previous.get(key)
+  if (prevProcess !== undefined) {
+    prevProcess.kill()
+    previous.delete(key)
+  }
+}
 
-  const { stdout } = await process.promise
-  return stdout.trim()
+export async function pomskyVersion(
+  { executable }: Config,
+  connection: Connection,
+  key: string,
+): Promise<string> {
+  try {
+    const process = asyncSpawn(executable.path || 'pomsky', ['--version'], {
+      timeout: 2_000,
+      env: { PATH },
+    })
+
+    const { stdout } = await process.promise
+    return stdout.trim()
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      await handleCliError(e, connection, key)
+    }
+    throw e
+  }
 }
 
 function parseExtraArgs(args?: string): string[] {
@@ -107,16 +126,19 @@ function parseExtraArgs(args?: string): string[] {
 }
 
 async function handleCliError(e: Error, connection: Connection, key: string) {
-  if (e instanceof NoExeError) {
-    // only report this error once
+  if (e instanceof NoExeError || e instanceof NoAccessError) {
+    // only report these errors once
     if (invalidExeReported.has(key)) {
       return
     }
     invalidExeReported.set(key, true)
 
     connection.sendNotification(ShowMessageNotification.type, {
-      message: `Couldn't find the '${e.command}' executable!
-If you downloaded it from GitHub, make sure to set its path in the settings!`,
+      message:
+        e instanceof NoExeError
+          ? `Couldn't find the '${e.command}' executable!
+If you downloaded it from GitHub, make sure to set its path in the settings!`
+          : e.message,
       type: MessageType.Error,
     })
   } else {

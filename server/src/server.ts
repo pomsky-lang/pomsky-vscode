@@ -13,7 +13,7 @@ import { documentSettings, getDocumentSettings, initConfig } from './config'
 import { capabilities, connection, setCapabilities, setConnection } from './state'
 import { initCompletion } from './lang/completion'
 import { initDiagnostics, validateTextDocument } from './lang/diagnostics'
-import { pomskyVersion, runPomskyWithErrorHandler } from './lang/pomskyCli'
+import { cancelPomsky, pomskyVersion, runPomskyWithErrorHandler } from './lang/pomskyCli'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
 
 setConnection(createConnection(ProposedFeatures.all))
@@ -61,14 +61,18 @@ documents.onDidClose(e => {
   documentSettings.delete(e.document.uri)
 })
 
-connection.onRequest('handler/compile', async ({ uri, content }: CompileHandler) => {
-  const settings = await getDocumentSettings(uri)
+connection.onRequest('handler/compile', async ({ uri, content, flavor }: CompileHandler) => {
+  let settings = await getDocumentSettings(uri)
+  if (flavor) {
+    settings = { ...settings, defaultFlavor: flavor }
+  }
   const res = await runPomskyWithErrorHandler(connection, { uri, getText: () => content }, settings)
   if (res === undefined) {
     connection.sendNotification('handler/compileResult', 'error')
     return
   }
-  const versionInfo = await pomskyVersion(settings)
+  // todo: don't get the version here, only when requested explicitly
+  const versionInfo = await pomskyVersion(settings, connection, uri)
 
   connection.sendNotification('handler/compileResult', {
     ...res,
@@ -76,6 +80,22 @@ connection.onRequest('handler/compile', async ({ uri, content }: CompileHandler)
     uri,
     versionInfo,
   } satisfies CompileResultHandler)
+})
+
+connection.onRequest('handler/cancelCompile', async ({ uri }: { uri: string }) => {
+  console.log(`Cancel compilation for ${uri}`)
+  cancelPomsky(uri)
+})
+
+connection.onRequest('handler/getExeVersion', async ({ uri }: { uri?: string }) => {
+  const settings = await getDocumentSettings(uri ?? 'global:')
+
+  try {
+    const versionInfo = await pomskyVersion(settings, connection, uri ?? 'global:')
+    connection.sendNotification('handler/exeVersion', { versionInfo })
+  } catch (error: unknown) {
+    connection.sendNotification('handler/exeVersion', { error })
+  }
 })
 
 documents.listen(connection)

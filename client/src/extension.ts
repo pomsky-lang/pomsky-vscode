@@ -2,14 +2,17 @@ import * as path from 'node:path'
 import { workspace, ExtensionContext } from 'vscode'
 
 import {
+  Disposable,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
 import { activatePanel } from './previewPanel'
+import { initStatusBar } from './statusBar'
 
 let client: LanguageClient
+const disposables: Disposable[] = []
 
 export function activate(context: ExtensionContext) {
   const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'))
@@ -37,11 +40,17 @@ export function activate(context: ExtensionContext) {
 
   // Start the client. This will also launch the server
   client.start()
+
+  initStatusBar(client, disposables)
 }
 
-export function deactivate(): Thenable<void> | undefined {
-  if (!client) {
-    return undefined
+export async function deactivate() {
+  for (const disposable of disposables) {
+    disposable.dispose()
   }
-  return client.stop()
+  disposables.length = 0
+
+  if (client) {
+    await client.stop()
+  }
 }

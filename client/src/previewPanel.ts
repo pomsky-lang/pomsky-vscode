@@ -2,7 +2,10 @@ import {
   commands,
   Disposable,
   ExtensionContext,
+  StatusBarAlignment,
+  StatusBarItem,
   TextDocument,
+  ThemeColor,
   Uri,
   ViewColumn,
   WebviewOptions,
@@ -11,17 +14,17 @@ import {
   workspace,
 } from 'vscode'
 import { LanguageClient } from 'vscode-languageclient/node'
+import { getDocumentSettings } from './config'
 import { getNonce } from './nonce'
 import { singleton } from './singleton'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
-import { Flavor } from './types/config'
+import { Config, Flavor } from './types/config'
 import { PomskyJsonDiagnostic } from './types/pomskyCli'
 
 export interface State {
   fileName: string
   content: string
   compileResult?: CompileResult
-  isCompiling: boolean
   flavor: Flavor
   versionInfo?: string
 }
@@ -33,12 +36,22 @@ export interface CompileResult {
   actualLength?: number
 }
 
-export type Message = { setState: State } | { setCompiling: boolean } | { setError: boolean }
+export type Message = { setState: State } | { setError: boolean }
+
+let cancelCompilation: (() => string) | undefined
 
 export function activatePanel(context: ExtensionContext, client: LanguageClient) {
   context.subscriptions.push(
-    commands.registerCommand('pomsky.openPreview', () => {
+    commands.registerCommand('pomsky.preview.open', () => {
       panelSingleton.getOrInit(context.extensionUri, client)
+    }),
+  )
+  context.subscriptions.push(
+    commands.registerCommand('pomsky.compilation.cancel', () => {
+      if (cancelCompilation) {
+        const uri = cancelCompilation()
+        client.sendRequest('handler/cancelCompile', { uri })
+      }
     }),
   )
 
@@ -87,16 +100,24 @@ interface PanelContext {
   panel: WebviewPanel
   document?: TextDocument
   content?: string
+  flavor?: Flavor
   compileResult?: CompileResult
+  statusBarVersion?: StatusBarItem
+  statusBarActivity?: StatusBarItem
 }
 
 function initPanel(context: PanelContext) {
   const disposables: Disposable[] = []
 
-  context.panel.webview.html = getHtmlForWebview(context)
+  const config = getDocumentSettings(context.document?.uri)
+  context.panel.webview.html = getHtmlForWebview(config, context)
   updateContent(context, true)
 
   setPanelTitle(context)
+
+  context.statusBarActivity = window.createStatusBarItem(StatusBarAlignment.Right)
+  context.statusBarVersion = window.createStatusBarItem(StatusBarAlignment.Right)
+  setStatusBarItemsActive(context)
 
   // Panel is disposed when the user closes the panel or when the panel is closed programmatically
   context.panel.onDidDispose(() => disposePanel(context, disposables), null, disposables)
@@ -107,6 +128,7 @@ function initPanel(context: PanelContext) {
       if (context.panel.visible) {
         updateContent(context)
       }
+      setStatusBarItemsActive(context)
     },
     null,
     disposables,
@@ -132,10 +154,9 @@ function initPanel(context: PanelContext) {
   // Handle messages from the webview
   context.panel.webview.onDidReceiveMessage(
     message => {
-      switch (message.command) {
-        case 'alert':
-          window.showErrorMessage(message.text)
-          return
+      if ('setFlavor' in message) {
+        context.flavor = message.setFlavor
+        updateContent(context, true)
       }
     },
     null,
@@ -173,14 +194,63 @@ function initPanel(context: PanelContext) {
             fileName: result.uri,
             content: context.content ?? '',
             compileResult: context.compileResult,
-            isCompiling: false,
             flavor: result.flavor,
             versionInfo: result.versionInfo,
           },
         } satisfies Message)
+
+        setStatusBarItems(context, result)
+
+        cancelCompilation = () => 'global:'
       },
     ),
   )
+}
+
+function setStatusBarItemsActive(context: PanelContext) {
+  if (context.statusBarVersion && context.statusBarActivity) {
+    if (context.panel.active) {
+      context.statusBarActivity.show()
+      context.statusBarVersion.show()
+    } else {
+      context.statusBarActivity.hide()
+      context.statusBarVersion.hide()
+    }
+  }
+}
+
+function setStatusBarItems(context: PanelContext, result: CompileResultHandler) {
+  if (context.statusBarVersion && context.statusBarActivity) {
+    const micros = result.timings.all
+    const isSlow = micros > 100_000
+
+    const hasErrors = result.diagnostics.some(d => d.severity === 'error')
+    const hasWarnings = !hasErrors && result.diagnostics.length > 0
+    const icon = isSlow || hasErrors || hasWarnings ? 'warning' : 'check'
+
+    context.statusBarVersion.text = result.versionInfo.replace(/^pomsky/i, 'Pomsky')
+    context.statusBarActivity.text = `$(${icon}) compiled in ${displayTime(micros)}`
+    if (hasErrors) {
+      context.statusBarActivity.tooltip = 'Pomsky found some errors during compilation!'
+      context.statusBarActivity.backgroundColor = new ThemeColor('statusBarItem.errorBackground')
+      context.statusBarActivity.command = {
+        command: 'workbench.action.problems.focus',
+        title: 'Show problems',
+      }
+    } else if (hasWarnings) {
+      context.statusBarActivity.tooltip = 'Pomsky found some warnings during compilation!'
+      context.statusBarActivity.backgroundColor = new ThemeColor('statusBarItem.warningBackground')
+      context.statusBarActivity.command = {
+        command: 'workbench.action.problems.focus',
+        title: 'Show problems',
+      }
+    } else if (isSlow) {
+      context.statusBarActivity.tooltip =
+        'Compilation took longer than expected. Consider simplifying the expression.'
+      context.statusBarActivity.backgroundColor = new ThemeColor('statusBarItem.warningBackground')
+      context.statusBarActivity.command = undefined
+    }
+  }
 }
 
 function setPanelTitle(context: PanelContext) {
@@ -199,6 +269,8 @@ function disposePanel(context: PanelContext, disposables: Disposable[]) {
   disposables.forEach(d => d.dispose())
   disposables.length = 0
   panelSingleton.dispose()
+  context.statusBarVersion?.dispose()
+  context.statusBarActivity?.dispose()
 }
 
 function updateContent(context: PanelContext, forceRefresh = false) {
@@ -214,9 +286,16 @@ function updateContent(context: PanelContext, forceRefresh = false) {
   context.content = content
 
   if (content !== undefined) {
-    context.panel.webview.postMessage({
-      setCompiling: true,
-    } satisfies Message)
+    if (context.statusBarActivity) {
+      context.statusBarActivity.text = '$(stop) compiling...'
+      context.statusBarActivity.tooltip = 'click to abort'
+      context.statusBarActivity.backgroundColor = undefined
+      context.statusBarActivity.command = {
+        command: 'pomsky.compilation.cancel',
+        title: 'Cancel compilation',
+        arguments: [`${uri.toString()}?preview`],
+      }
+    }
 
     context.client.sendRequest('handler/compile', {
       content,
@@ -225,11 +304,22 @@ function updateContent(context: PanelContext, forceRefresh = false) {
       // CLI is invoked for both diagnostics and the preview. This query parameter ensures they
       // don't interfere with one another
       uri: `${uri.toString()}?preview`,
+      flavor: context.flavor,
     } satisfies CompileHandler)
+
+    cancelCompilation = () => {
+      if (context.statusBarActivity) {
+        context.statusBarActivity.text = 'compilation aborted'
+        context.statusBarActivity.tooltip = undefined
+        context.statusBarActivity.backgroundColor = undefined
+        context.statusBarActivity.command = undefined
+      }
+      return `${uri.toString()}?preview`
+    }
   }
 }
 
-function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
+function getHtmlForWebview(config: Config, { extUri, panel: { webview } }: PanelContext) {
   const scriptPath = Uri.joinPath(extUri, 'media', 'script.js')
   const stylePath = Uri.joinPath(extUri, 'media', 'style.css')
 
@@ -248,14 +338,20 @@ function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
     <title>Pomsky Preview</title>
   </head>
   <body>
+    <div id="header">
+      Flavor:
+      <select id="flavorSelect" value="${config.defaultFlavor}">
+        <option value="JavaScript">JavaScript</option>
+        <option value="Pcre">PCRE</option>
+        <option value="Rust">Rust</option>
+        <option value="Java">Java</option>
+        <option value="DotNet">.NET</option>
+        <option value="Python">Python</option>
+        <option value="Ruby">Ruby</option>
+      </select>
+    </div>
     <pre id="pre"></pre>
     <details id="diagnostics"></details>
-
-    <div id="footer">
-      <div id="version"></div>
-      <div id="timing"></div>
-    </div>
-
     <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
   </body>
   </html>`
@@ -264,5 +360,26 @@ function getHtmlForWebview({ extUri, panel: { webview } }: PanelContext) {
 function trimLength(output: string | undefined, len: number) {
   if (output !== undefined) {
     return output.slice(0, len)
+  }
+}
+
+function displayTime(micros: number): string {
+  if (micros >= 1_000_000) {
+    const secs = micros / 1_000_000
+    if (secs < 9.5) {
+      return `${secs.toFixed(1)} s`
+    }
+
+    let time = `${Math.round(secs % 60)} s`
+    const mins = (secs / 60) | 0
+    if (mins > 0) {
+      time = `${mins} min ${time}`
+    }
+    return time
+  } else if (micros >= 1000) {
+    const millis = micros / 1000
+    return `${millis >= 9.5 ? Math.round(millis) : millis.toFixed(1)} ms`
+  } else {
+    return `${(micros / 1000).toFixed(2)} ms`
   }
 }

@@ -50,6 +50,8 @@ export function asyncSpawn(
 
         if (e.message.includes('ENOENT')) {
           reject(new NoExeError(command))
+        } else if (e.message.includes('EACCES')) {
+          reject(new NoAccessError(command))
         } else {
           reject(e)
         }
@@ -91,5 +93,11 @@ export function asyncSpawn(
 export class NoExeError extends Error {
   constructor(public readonly command: string) {
     super(`executable '${command}' not found. Make sure it's in your PATH!`)
+  }
+}
+
+export class NoAccessError extends Error {
+  constructor(public readonly command: string) {
+    super(`no permission to execute '${command}'. Make sure the file is executable!`)
   }
 }

@@ -12,8 +12,8 @@
     "vscode:prepublish": "npm run client:esbuild-base -- --minify && npm run server:esbuild-base -- --minify",
     "client:esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
     "server:esbuild-base": "esbuild ./server/src/server.ts --bundle --outfile=dist/server.js --external:vscode --format=cjs --platform=node",
-    "esbuild": "npm run client:esbuild-base -- --sourcemap && npm run server:esbuild-base -- --sourcemap",
-    "esbuild-watch": "concurrently \"npm run client:esbuild-base -- --sourcemap --watch\" \"npm run server:esbuild-base -- --sourcemap --watch\"",
+    "build-dev": "npm run client:esbuild-base -- --sourcemap && npm run server:esbuild-base -- --sourcemap",
+    "watch": "concurrently \"npm run client:esbuild-base -- --sourcemap --watch\" \"npm run server:esbuild-base -- --sourcemap --watch\"",
     "test-compile": "tsc -b",
     "test-watch": "tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
@@ -55,7 +55,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "pomsky.openPreview",
+        "command": "pomsky.preview.open",
         "title": "Open compiled RegExp on the right",
         "category": "Pomsky",
         "shortTitle": "Preview",
@@ -63,20 +63,30 @@
           "dark": "./media/preview-dark.svg",
           "light": "./media/preview-light.svg"
         }
+      },
+      {
+        "command": "pomsky.executable.set",
+        "title": "Set path to Pomsky executable",
+        "category": "Pomsky"
+      },
+      {
+        "command": "pomsky.compilation.cancel",
+        "title": "Cancel compilation",
+        "category": "Pomsky"
       }
     ],
     "menus": {
       "editor/context": [
         {
           "when": "resourceLangId == pomsky",
-          "command": "pomsky.openPreview",
+          "command": "pomsky.preview.open",
           "group": "navigation"
         }
       ],
       "editor/title": [
         {
           "when": "resourceLangId == pomsky",
-          "command": "pomsky.openPreview",
+          "command": "pomsky.preview.open",
           "group": "navigation"
         }
       ]
