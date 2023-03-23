@@ -15,6 +15,7 @@ import { initCompletion } from './lang/completion'
 import { initDiagnostics, validateTextDocument } from './lang/diagnostics'
 import { cancelPomsky, pomskyVersion, runPomskyWithErrorHandler } from './lang/pomskyCli'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
+import { initTooltips } from './lang/tooltips'
 
 setConnection(createConnection(ProposedFeatures.all))
 
@@ -23,6 +24,7 @@ const documents = new TextDocuments(TextDocument)
 initConfig(documents, validateTextDocument)
 initDiagnostics(documents)
 initCompletion(documents)
+initTooltips(documents)
 
 console.log('Pomsky language server started.')
 
@@ -40,6 +42,7 @@ connection.onInitialize((params: InitializeParams) => {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       // Tell the client that this server supports code completion.
       completionProvider: { resolveProvider: true },
+      hoverProvider: true,
     },
   }
   if (capabilities.workspaceFolders) {

@@ -8,7 +8,7 @@ import {
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { charSetCompletions, globalCompletions, lookupDocumentation } from './snippets'
-import { findClosestTokenIndex, isInCharacterSet, tokenizePomsky } from './tokenizePomsky'
+import { findClosestTokenIndex, isInCharacterSet, Token, tokenizePomsky } from './tokenizePomsky'
 import { connection } from '../state'
 
 export function initCompletion(documents: TextDocuments<TextDocument>) {
@@ -30,7 +30,7 @@ export function initCompletion(documents: TextDocuments<TextDocument>) {
       if (tokenIndex < tokens.length) {
         // don't show completions within strings or multi-char sigils such as `<<`
         const token = tokens[tokenIndex]
-        if (token[0] !== 'Identifier' && offset > token[1] && offset < token[2]) {
+        if (token[0] !== Token.Identifier && offset > token[1] && offset < token[2]) {
           return []
         }
 
