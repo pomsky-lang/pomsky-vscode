@@ -1,7 +1,7 @@
 import { Hover, HoverParams, Range, TextDocuments } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { findClosestTokenIndex, Token, tokenizePomsky } from './tokenizePomsky'
-import { connection } from '../state'
+import { connection, documentInfo } from '../state'
 
 export function initTooltips(documents: TextDocuments<TextDocument>) {
   connection.onHover(({ position, textDocument }: HoverParams): Hover | undefined => {
@@ -12,15 +12,13 @@ export function initTooltips(documents: TextDocuments<TextDocument>) {
 
     const text = model.getText()
 
-    // const start = process.hrtime()
+    const docInfo = documentInfo[model.uri]
+    const tokens =
+      docInfo != null && docInfo.lastContent === text ? docInfo.tokens : tokenizePomsky(text)
+    documentInfo[model.uri] = { lastContent: text, tokens }
 
-    const tokens = tokenizePomsky(text)
     const offset = model.offsetAt(position)
     const tokenIndex = findClosestTokenIndex(tokens, offset)
-
-    // const time = process.hrtime(start)
-    // const ms = time[0] * 1000 + time[1] / 1000000
-    // console.log(`lexed in ${ms.toFixed(3)} ms`)
 
     if (tokenIndex < tokens.length) {
       const [tokenKind, wordStart, wordEnd] = tokens[tokenIndex]
@@ -52,7 +50,12 @@ export function initTooltips(documents: TextDocuments<TextDocument>) {
           break
         }
         case Token.Not: {
-          contents = 'Negation'
+          contents = `Negation.
+~~~pomsky
+!%       # negated word boundary
+!['a']   # negated character set
+!<< 'a'  # negative lookbehind
+~~~`
           break
         }
         case Token.Colon: {

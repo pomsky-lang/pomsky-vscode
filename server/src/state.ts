@@ -1,4 +1,5 @@
 import { Connection } from 'vscode-languageserver'
+import { TokenOrError } from './lang/tokenizePomsky'
 
 interface Capabilities {
   readonly config: boolean
@@ -20,4 +21,11 @@ export let connection: Connection
 
 export function setConnection(connection_: Connection) {
   connection = connection_
+}
+
+export const documentInfo: Record<string, DocumentInfo> = {}
+
+export interface DocumentInfo {
+  lastContent: string
+  tokens: [TokenOrError, number, number][]
 }

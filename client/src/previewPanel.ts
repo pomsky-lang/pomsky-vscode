@@ -74,9 +74,17 @@ const defaultColumn = ViewColumn.Beside
 
 const panelSingleton = singleton((extUri: Uri, client: LanguageClient, panel?: WebviewPanel) => {
   if (panel) {
-    panel.reveal(defaultColumn)
+    panel.reveal(defaultColumn, true)
   } else {
-    panel = window.createWebviewPanel(viewType, 'Pomsky', defaultColumn, getWebviewOptions(extUri))
+    panel = window.createWebviewPanel(
+      viewType,
+      'Pomsky',
+      {
+        viewColumn: defaultColumn,
+        preserveFocus: true,
+      },
+      getWebviewOptions(extUri),
+    )
   }
 
   initPanel({

@@ -9,7 +9,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { charSetCompletions, globalCompletions, lookupDocumentation } from './snippets'
 import { findClosestTokenIndex, isInCharacterSet, Token, tokenizePomsky } from './tokenizePomsky'
-import { connection } from '../state'
+import { connection, documentInfo } from '../state'
 
 export function initCompletion(documents: TextDocuments<TextDocument>) {
   // Provides the initial list of the completion items
@@ -21,7 +21,11 @@ export function initCompletion(documents: TextDocuments<TextDocument>) {
       }
 
       const text = model.getText()
-      const tokens = tokenizePomsky(text)
+
+      const docInfo = documentInfo[model.uri]
+      const tokens =
+        docInfo != null && docInfo.lastContent === text ? docInfo.tokens : tokenizePomsky(text)
+      documentInfo[model.uri] = { lastContent: text, tokens }
 
       const offset = model.offsetAt(position)
       const tokenIndex = findClosestTokenIndex(tokens, offset)

@@ -64,11 +64,11 @@ export const enum Token {
   Identifier,
 }
 
-interface TokenError {
+export interface TokenError {
   error: string
 }
 
-type TokenOrError = Token | TokenError
+export type TokenOrError = Token | TokenError
 
 export function tokenizePomsky(input: string): [TokenOrError, number, number][] {
   const result: [Token | TokenError, number, number][] = []
