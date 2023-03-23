@@ -129,109 +129,21 @@ export function initTooltips(documents: TextDocuments<TextDocument>) {
       const content = model.getText(range)
 
       if (tokenKind === Token.CodePoint) {
-        const codePoint = Number.parseInt(content.replace(/^U\s*\+\s*/u, ''), 16)
-        const hex = codePoint.toString(16).toUpperCase().padStart(4, '0')
-        const display = String.fromCodePoint(codePoint)
+        const hexString = content.replace(/^U\s*\+\s*/u, '')
+        if (/^[0-9a-fA-F]$/u.test(hexString)) {
+          const codePoint = Number.parseInt(hexString, 16)
+          const hex = codePoint.toString(16).toUpperCase().padStart(4, '0')
+          const display = String.fromCodePoint(codePoint)
 
-        const isVisible = !/[\p{Other}\p{Separator}]/u.test(display)
-        const heading = isVisible ? `## ${display}\n` : ''
-        contents = `${heading}Code point \`U+${hex}\` (dec: ${codePoint})`
-      } else if (tokenKind === Token.Identifier) {
-        switch (content) {
-          case 'let': {
-            contents = `Declares a [variable](https://pomsky-lang.org/docs/language-tour/variables/).
-Syntax:
-~~~pomsky
-let name = "expression";
-name
-~~~`
-            break
-          }
-          case 'range': {
-            contents = `A [number range](https://pomsky-lang.org/docs/language-tour/ranges/),
-which can match multi-digit numbers of any base. Syntax:
-~~~pomsky
-# match decimal numbers between 0 and 255
-range '0'-'255'
-
-# match hexadecimal numbers between 15 and FFF
-range '15'-'FFF' base 16
-~~~`
-            break
-          }
-          case 'atomic': {
-            contents = `An [atomic group](https://pomsky-lang.org/docs/language-tour/groups/#atomic-groups).
-Syntax:
-~~~pomsky
-atomic('group content')
-~~~`
-            break
-          }
-          case 'regex': {
-            contents = `An [inline regular expression](https://pomsky-lang.org/docs/language-tour/regex/).
-Syntax:
-~~~pomsky
-regex '...'
-~~~`
-            break
-          }
-          case 'lazy': {
-            contents = `Makes the previous repetition [lazy](https://pomsky-lang.org/docs/language-tour/repetitions/#greedy-and-lazy-matching),
-so it will match as few times as possible.
-Syntax:
-~~~pomsky
-'...'* lazy
-~~~`
-            break
-          }
-          case 'greedy': {
-            contents = `Makes the previous repetition [greedy](https://pomsky-lang.org/docs/language-tour/repetitions/#greedy-and-lazy-matching),
-so it will match as many times as possible. Note that lazy repetition is the default, so the \`greedy\`
-modifier is only needed in [lazy mode](https://pomsky-lang.org/docs/language-tour/repetitions/).
-Syntax:
-~~~pomsky
-'...'* lazy
-~~~`
-            break
-          }
-          case 'U':
-          case 'if':
-          case 'else':
-          case 'recursion':
-          case 'test': {
-            contents = `This keyword is reserved and can't be used as a variable name!`
-            break
-          }
-          case 'Start': {
-            contents = `Start of string assertion; alias for \`^\`.\n\n[Documentation](https://pomsky-lang.org/docs/language-tour/boundaries/)`
-            break
-          }
-          case 'End': {
-            contents = `End of string assertion; alias for \`$\`.\n\n[Documentation](https://pomsky-lang.org/docs/language-tour/boundaries/)`
-            break
-          }
-          case 'C':
-          case 'Codepoint': {
-            contents = `An arbitrary codepoint. Can be written as \`Codepoint\` or abbreviated as \`C\`.`
-            break
-          }
-          case 'G':
-          case 'Grapheme': {
-            contents = `An arbitrary [grapheme](https://pomsky-lang.org/docs/language-tour/graphemes/),
-which may consist of multiple codepoints. Can be written as \`Grapheme\` or abbreviated as \`G\`.`
-            break
-          }
-          default:
-            return
+          const isVisible = !/[\p{Other}\p{Separator}]/u.test(display)
+          const heading = isVisible ? `## ${display}\n` : ''
+          contents = `${heading}Code point \`U+${hex}\` (dec: ${codePoint})`
         }
-      } else if (contents === undefined) {
-        return
+      } else if (tokenKind === Token.Identifier) {
+        contents = identToTooltip(content)
       }
 
-      return {
-        contents,
-        range,
-      }
+      return contents === undefined ? undefined : { contents, range }
     }
   })
 }
@@ -240,4 +152,83 @@ function offsetsToRange(model: TextDocument, startOffset: number, endOffset: num
   const start = model.positionAt(startOffset)
   const end = model.positionAt(endOffset)
   return { start, end }
+}
+
+function identToTooltip(ident: string): string | undefined {
+  switch (ident) {
+    case 'let': {
+      return `Declares a [variable](https://pomsky-lang.org/docs/language-tour/variables/).
+Syntax:
+~~~pomsky
+let name = "expression";
+name
+~~~`
+    }
+    case 'range': {
+      return `A [number range](https://pomsky-lang.org/docs/language-tour/ranges/),
+which can match multi-digit numbers of any base. Syntax:
+~~~pomsky
+# match decimal numbers between 0 and 255
+range '0'-'255'
+
+# match hexadecimal numbers between 15 and FFF
+range '15'-'FFF' base 16
+~~~`
+    }
+    case 'atomic': {
+      return `An [atomic group](https://pomsky-lang.org/docs/language-tour/groups/#atomic-groups).
+Syntax:
+~~~pomsky
+atomic('group content')
+~~~`
+    }
+    case 'regex': {
+      return `An [inline regular expression](https://pomsky-lang.org/docs/language-tour/regex/).
+Syntax:
+~~~pomsky
+regex '...'
+~~~`
+    }
+    case 'lazy': {
+      return `Makes the previous repetition [lazy](https://pomsky-lang.org/docs/language-tour/repetitions/#greedy-and-lazy-matching),
+so it will match as few times as possible.
+Syntax:
+~~~pomsky
+'...'* lazy
+~~~`
+    }
+    case 'greedy': {
+      return `Makes the previous repetition [greedy](https://pomsky-lang.org/docs/language-tour/repetitions/#greedy-and-lazy-matching),
+so it will match as many times as possible. Note that lazy repetition is the default, so the \`greedy\`
+modifier is only needed in [lazy mode](https://pomsky-lang.org/docs/language-tour/repetitions/).
+Syntax:
+~~~pomsky
+'...'* lazy
+~~~`
+    }
+    case 'U':
+    case 'if':
+    case 'else':
+    case 'recursion':
+    case 'test': {
+      return `This keyword is reserved and can't be used as a variable name!`
+    }
+    case 'Start': {
+      return `Start of string assertion; alias for \`^\`.\n\n[Documentation](https://pomsky-lang.org/docs/language-tour/boundaries/)`
+    }
+    case 'End': {
+      return `End of string assertion; alias for \`$\`.\n\n[Documentation](https://pomsky-lang.org/docs/language-tour/boundaries/)`
+    }
+    case 'C':
+    case 'Codepoint': {
+      return `An arbitrary codepoint. Can be written as \`Codepoint\` or abbreviated as \`C\`.`
+    }
+    case 'G':
+    case 'Grapheme': {
+      return `An arbitrary [grapheme](https://pomsky-lang.org/docs/language-tour/graphemes/),
+which may consist of multiple codepoints. Can be written as \`Grapheme\` or abbreviated as \`G\`.`
+    }
+    default:
+      return
+  }
 }

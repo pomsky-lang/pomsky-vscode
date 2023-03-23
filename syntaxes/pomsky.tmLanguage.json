@@ -59,7 +59,7 @@
     },
     "codepoints": {
       "name": "constant.numeric.pomsky",
-      "match": "\\bU[+_][0-9a-fA-F]+\\b"
+      "match": "\\bU\\s*\\+\\s*[0-9a-zA-Z_]+\\b"
     },
     "numbers": {
       "name": "constant.numeric.pomsky",

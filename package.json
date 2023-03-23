@@ -102,7 +102,14 @@
           ".pom",
           ".pomsky"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./media/icon.png",
+          "dark": "./media/icon.png"
+        }
+      },
+      {
+        "id": "pomsky-injection"
       }
     ],
     "grammars": [
@@ -110,6 +117,17 @@
         "language": "pomsky",
         "scopeName": "source.pomsky",
         "path": "./syntaxes/pomsky.tmLanguage.json"
+      },
+      {
+        "language": "pomsky-injection",
+        "scopeName": "markdown.pomsky.codeblock",
+        "path": "./syntaxes/codeblock.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.pomsky": "pomsky"
+        }
       }
     ],
     "configuration": [

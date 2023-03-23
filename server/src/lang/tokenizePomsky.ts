@@ -1,9 +1,10 @@
 import { err } from '../util/err'
 
 const IS_ASCII_DIGIT = /[0-9]/u
-const NO_ASCII_HEXDIGIT = /[^0-9a-fA-F]/u
+const NO_CODEPOINT_CHAR = /[^0-9\p{Alpha}]/u
 const IS_LETTER = /\p{Alpha}/u
 const NO_WORD_CHAR = /[^\p{Alpha}\p{M}\p{Nd}_]/u
+const CODE_POINT_START = /^U\s*\+/u
 
 const DOUBLE_QUOTED_STRING = /^"(?:\\[\s\S]|[^\\"])*"?/u
 
@@ -145,15 +146,16 @@ function consumeChain(input: string): [number, Token | TokenError] {
     }
   }
 
-  if (input.startsWith('U+')) {
-    const rest = input.slice(2)
-    const lenInner = rest.search(NO_ASCII_HEXDIGIT)
+  if (CODE_POINT_START.test(input)) {
+    const rest = input.replace(CODE_POINT_START, '').trimStart()
+    const trimmed = input.length - rest.length
+    const lenInner = rest.search(NO_CODEPOINT_CHAR)
     if (lenInner === -1) {
       return [input.length, Token.CodePoint]
     } else if (lenInner === 0) {
       return [1, { error: 'MissingCodePointNumber' }]
     } else {
-      return [lenInner + 2, Token.CodePoint]
+      return [lenInner + trimmed, Token.CodePoint]
     }
   }
 
