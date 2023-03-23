@@ -2,6 +2,7 @@
 client
 server
 types
+node_modules
 
 .*ignore
 .editorconfig
@@ -9,6 +10,7 @@ types
 .prettierrc*
 .gitattributes
 tsconfig.json
+package-lock.json
 *.vsix
 
 dist/*.js.map
