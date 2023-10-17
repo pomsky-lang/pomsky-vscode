@@ -11,10 +11,9 @@ export function initDiagnostics(documents: TextDocuments<TextDocument>) {
     validateTextDocument(change.document)
   })
 
-  // Monitors file changes in VSCode
-  // connection.onDidChangeWatchedFiles(_change => {
-  //   connection.console.log('We received an file change event')
-  // })
+  documents.onDidClose(change => {
+    connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] })
+  })
 }
 
 export async function validateTextDocument(document: TextDocument): Promise<void> {
@@ -28,7 +27,7 @@ export async function validateTextDocument(document: TextDocument): Promise<void
   const encoded = res.diagnostics.length ? new TextEncoder().encode(text) : undefined
 
   const diagnostics = res.diagnostics.map(pd => {
-    const span = pd.spans[0]
+    const span = pd.spans[0] ?? { start: 0, end: 0 }
     const sliceBefore = encoded!.slice(0, span.start)
     const sliceInner = encoded!.slice(span.start, span.end)
 

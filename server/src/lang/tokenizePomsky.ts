@@ -21,6 +21,10 @@ export const enum Token {
   Backref,
   /** word boundary `%` */
   BWord,
+  /** word start, `<` */
+  AngleLeft,
+  /** word end, `>` */
+  AngleRight,
   /** Zero or more repetition `*` */
   Star,
   /** One or more repetition `+` */
@@ -99,6 +103,8 @@ const singleTokens: { [token: string]: Token | TokenError } = {
   $: Token.Dollar,
   '^': Token.Caret,
   '%': Token.BWord,
+  '<': Token.AngleLeft,
+  '>': Token.AngleRight,
   '*': Token.Star,
   '+': Token.Plus,
   '?': Token.QuestionMark,

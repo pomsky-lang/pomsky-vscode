@@ -146,11 +146,54 @@ This should only be used as a last resort, since Pomsky can't ensure that the ou
 
 ### Example:
 ~~~pomsky
-# recursion, works in PCRE and Ruby
-let recurse = regex '\\g<0>';
+# subroutine for matching the 2nd capturing group
+let subroutine_two = regex '\\g<2>';
 ~~~
 
 [Reference](https://pomsky-lang.org/docs/language-tour/regex/)`,
+  },
+  match: {
+    snippet: "match '$1';$0",
+    doc: `Assert that the expression matches the string exactly. Only valid within a \`test {}\` block.
+
+### Example:
+~~~pomsky
+test {
+  match 'foo';
+  match 'bar';
+}
+
+'foo' | 'bar'
+~~~`,
+  },
+  reject: {
+    snippet: "reject '$1';$0",
+    doc: `Assert that the expression does _not_ match the string exactly. Only valid within a \`test {}\` block.
+
+### Example:
+~~~pomsky
+test {
+  reject 'foo';
+}
+
+'f' 'o'{3,}
+~~~`,
+  },
+  test: {
+    snippet: `test {
+  match '$1';$0
+}`,
+    doc: `Unit tests for your Pomsky expression.
+
+### Example:
+~~~pomsky
+test {
+  reject 'foo';
+  match 'fooo';
+}
+
+'f' 'o'{3,}
+~~~`,
   },
 })
 

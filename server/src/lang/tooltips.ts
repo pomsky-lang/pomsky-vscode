@@ -206,11 +206,27 @@ Syntax:
 '...'* lazy
 ~~~`
     }
+    case 'test': {
+      return `Contains unit tests. Syntax:
+~~~pomsky
+test {
+  match 'foo';
+  reject 'bar';
+  # etc.
+}
+~~~`
+    }
+    case 'recursion': {
+      return `Recursively matches the entire regex. Syntax:
+~~~pomsky
+# matches a balanced set of parentheses
+'(' recursion* ')'
+~~~
+This is only supported in the PCRE and Ruby regex flavors.`
+    }
     case 'U':
     case 'if':
-    case 'else':
-    case 'recursion':
-    case 'test': {
+    case 'else': {
       return `This keyword is reserved and can't be used as a variable name!`
     }
     case 'Start': {

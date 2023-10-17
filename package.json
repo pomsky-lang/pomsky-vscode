@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
@@ -157,6 +157,12 @@
               "Ruby (Oniguruma) flavor"
             ],
             "description": "Regex flavor to compile to"
+          },
+          "pomsky.runTests": {
+            "title": "Run tests",
+            "type": "boolean",
+            "default": false,
+            "description": "Run Pomsky unit tests after every change"
           },
           "pomsky.executable.path": {
             "type": "string",

@@ -10,6 +10,7 @@ export function getDocumentSettings(uri?: Uri): Config {
       path: result.get('executable.path') ?? 'pomsky',
       extraArgs: result.get('executable.extraArgs') ?? '',
     },
+    runTests: result.get('runTests') ?? false,
   }
   return config
 }

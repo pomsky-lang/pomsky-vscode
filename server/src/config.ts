@@ -17,6 +17,7 @@ const defaultSettings: Config = {
     path: 'pomsky',
     extraArgs: '',
   },
+  runTests: false,
 }
 let globalSettings: Config = defaultSettings
 

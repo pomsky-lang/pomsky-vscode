@@ -9,14 +9,15 @@
     { "include": "#references" },
     { "include": "#codepoints" },
     { "include": "#numbers" },
-    { "include": "#constants" }
+    { "include": "#constants" },
+    { "include": "#testBlocks" }
   ],
   "repository": {
     "keywords": {
       "patterns": [
         {
           "name": "keyword.other.pomsky",
-          "match": "\\b(let|enable|disable|test)\\b"
+          "match": "\\b(let|enable|disable)\\b"
         },
         {
           "name": "keyword.control.pomsky",
@@ -69,12 +70,37 @@
       "patterns": [
         {
           "name": "constant.language.pomsky",
-          "match": "[.^$%]|!%"
+          "match": "[.^$%<>]|!%"
         },
         {
           "name": "constant.other.pomsky",
           "match": "\\b(Start|End|C|Codepoint|G|Grapheme)\\b"
         }
+      ]
+    },
+    "testBlocks": {
+      "begin": "\\b(test)\\s*{",
+      "end": "}",
+      "beginCaptures": {
+        "1": { "name": "keyword.other.pomsky" }
+      },
+      "patterns": [
+        {
+          "name": "keyword.other.pomsky",
+          "match": "match|reject|in|as"
+        },
+        {
+          "begin": "{",
+          "end": "}",
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#dstrings" },
+            { "include": "#sstrings" }
+          ]
+        },
+        { "include": "#comments" },
+        { "include": "#dstrings" },
+        { "include": "#sstrings" }
       ]
     }
   },

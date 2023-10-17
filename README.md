@@ -17,13 +17,14 @@ still in development and lacks some features.
 - Live preview of compiled expression
   - Right-click and select `Open compiled RegExp on the right` or click the icon in the top right
     corner
+- Hover tooltips for keywords and built-ins
+- Embedded syntax highlighting in Markdown code blocks
 
 Missing IDE features:
 
 - Go to definition / find usages / rename variable
 - Code formatting
 - Extend selection
-- Documentation tooltips
 - Quick fixes
 - Compiled Regex: find and replace
 - Select flavor in preview window
@@ -46,6 +47,8 @@ executable compiled to WASM, so no setup is needed.
 The following configurations are available:
 
 - `pomsky.defaultFlavor`: Specifies the default regex flavor
+
+- `pomsky.runTests`: Enable to conveniently run tests and see test failures on every change
 
 - `pomsky.executable.path`: Points to the Pomsky executable
 

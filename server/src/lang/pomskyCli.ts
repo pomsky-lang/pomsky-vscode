@@ -54,7 +54,7 @@ export async function runPomskyWithErrorHandler(
 }
 
 export async function runPomsky(
-  { defaultFlavor, executable }: Config,
+  { defaultFlavor, executable, runTests }: Config,
   content: string,
   key: string,
 ): Promise<PomskyJsonResponse> {
@@ -66,7 +66,14 @@ export async function runPomsky(
 
   const process = asyncSpawn(
     executable.path === '' ? 'pomsky' : executable.path,
-    ['-f', defaultFlavor, '--json', content, ...parseExtraArgs(executable.extraArgs)],
+    [
+      '-f',
+      defaultFlavor,
+      '--json',
+      ...(runTests ? ['--test=pcre2'] : []),
+      content,
+      ...parseExtraArgs(executable.extraArgs),
+    ],
     {
       expectedCodes: [0, 1],
       timeout: 30_000,
