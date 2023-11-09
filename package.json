@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
@@ -20,15 +20,15 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
   },
   "devDependencies": {
-    "@types/node": "^16.11.7",
+    "@types/node": "^20.9.0",
     "@types/vscode": "^1.70.0",
     "@types/vscode-webview": "^1.57.0",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
-    "concurrently": "^7.6.0",
-    "esbuild": "^0.17.11",
-    "eslint": "^8.35.0",
-    "typescript": "^5.0.2"
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.19.5",
+    "eslint": "^8.53.0",
+    "typescript": "^5.2.2"
   },
   "readme": "README.md",
   "homepage": "https://pomsky-lang.org/",

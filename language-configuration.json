@@ -7,7 +7,6 @@
   },
   // symbols used as brackets
   "brackets": [
-    ["{", "}"],
     ["[", "]"],
     ["(", ")"]
   ],
@@ -25,5 +24,35 @@
     ["(", ")"],
     ["\"", "\""],
     ["'", "'"]
+  ],
+  "colorizedBracketPairs": [["(", ")"]],
+  "onEnterRules": [
+    {
+      "action": {
+        "indent": "none",
+        "appendText": "# "
+      },
+      "beforeText": "^\\s*#"
+    },
+    {
+      "action": {
+        "indent": "indentOutdent"
+      },
+      "beforeText": "\\(\\s*!?(<<|>>)?\\s*$",
+      "afterText": "\\)"
+    },
+    {
+      "action": {
+        "indent": "indentOutdent"
+      },
+      "beforeText": "\\btest\\s*\\{\\s*$",
+      "afterText": "\\}"
+    },
+    {
+      "action": {
+        "indent": "indentOutdent"
+      },
+      "beforeText": "([=!]|<<|>>)s*$"
+    }
   ]
 }

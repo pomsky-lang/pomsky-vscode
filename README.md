@@ -14,6 +14,7 @@ still in development and lacks some features.
 - Syntax highlighting
 - Underlined errors and warnings
 - Auto-completion of variables and character classes
+- Running tests (enable with the `pomsky.runTests`) configuration
 - Live preview of compiled expression
   - Right-click and select `Open compiled RegExp on the right` or click the icon in the top right
     corner
@@ -27,7 +28,6 @@ Missing IDE features:
 - Extend selection
 - Quick fixes
 - Compiled Regex: find and replace
-- Select flavor in preview window
 
 ## Requirements
 
