@@ -10,9 +10,14 @@ export interface PomskyJsonDiagnostic {
   severity: 'error' | 'warning'
   kind: string
   code: string
-  spans: { start: number; end: number }[]
+  spans: PomskyJsonSpan[]
   description: string
   help: string[]
   fixes: never[]
   visual: string
+}
+
+export interface PomskyJsonSpan {
+  start: number
+  end: number
 }

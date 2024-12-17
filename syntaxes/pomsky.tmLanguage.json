@@ -21,7 +21,7 @@
         },
         {
           "name": "keyword.control.pomsky",
-          "match": "\\b(if|else|lazy|greedy|range|base|atomic|recursion|regex)\\b|!?(<<|>>)|[+*?]"
+          "match": "\\b(if|else|lazy|greedy|range|base|atomic|recursion|regex|call)\\b|!?(<<|>>)|[+*?]"
         },
         {
           "name": "keyword.operator.pomsky",

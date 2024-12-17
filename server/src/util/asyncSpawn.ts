@@ -8,6 +8,7 @@ export interface Spawned {
 }
 
 export interface AsyncSpawnArgs {
+  stdin?: string
   expectedCodes?: number[]
   timeout?: number
   env?: NodeJS.ProcessEnv
@@ -16,13 +17,17 @@ export interface AsyncSpawnArgs {
 export function asyncSpawn(
   command: string,
   args: string[],
-  { expectedCodes = [0], timeout, env }: AsyncSpawnArgs = {},
+  { expectedCodes = [0], timeout, env, stdin }: AsyncSpawnArgs = {},
 ): Spawned {
   let promiseCompleted = false
   let process: ChildProcessWithoutNullStreams
 
   try {
     process = cp.spawn(command, args, { env })
+    if (stdin) {
+      process.stdin.write(stdin)
+      process.stdin.end()
+    }
   } catch (e) {
     return {
       promise: Promise.reject(new Error(`could not spawn process '${command}'`)),

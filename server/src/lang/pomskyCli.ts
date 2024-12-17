@@ -64,17 +64,13 @@ export async function runPomsky(
     previous.delete(key)
   }
 
+  const testArgs = runTests ? ['--test=pcre2'] : []
+
   const process = asyncSpawn(
-    executable.path === '' ? 'pomsky' : executable.path,
-    [
-      '-f',
-      defaultFlavor,
-      '--json',
-      ...(runTests ? ['--test=pcre2'] : []),
-      content,
-      ...parseExtraArgs(executable.extraArgs),
-    ],
+    executable.path || 'pomsky',
+    ['-f', defaultFlavor, '--json', ...testArgs, ...parseExtraArgs(executable.extraArgs)],
     {
+      stdin: content,
       expectedCodes: [0, 1],
       timeout: 30_000,
       env: { PATH },

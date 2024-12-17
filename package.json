@@ -25,10 +25,10 @@
     "@types/vscode-webview": "^1.57.0",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
-    "concurrently": "^8.2.2",
+    "concurrently": "9.1.0",
     "esbuild": "^0.19.5",
     "eslint": "^8.53.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.7.2"
   },
   "readme": "README.md",
   "homepage": "https://pomsky-lang.org/",
@@ -99,8 +99,8 @@
           "pomsky"
         ],
         "extensions": [
-          ".pom",
-          ".pomsky"
+          ".pomsky",
+          ".pom"
         ],
         "configuration": "./language-configuration.json",
         "icon": {

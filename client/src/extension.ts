@@ -1,5 +1,5 @@
 import * as path from 'node:path'
-import { workspace, ExtensionContext } from 'vscode'
+import { ExtensionContext } from 'vscode'
 
 import {
   Disposable,
@@ -28,10 +28,6 @@ export function activate(context: ExtensionContext) {
   const clientOptions: LanguageClientOptions = {
     // Register the server for plain text documents
     documentSelector: [{ scheme: 'file', language: 'pomsky' }],
-    synchronize: {
-      // Notify the server about file changes to '.clientrc files contained in the workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
-    },
   }
 
   client = new LanguageClient('pomsky', 'Pomksy', serverOptions, clientOptions)

@@ -16,6 +16,10 @@ import { initDiagnostics, validateTextDocument } from './lang/diagnostics'
 import { cancelPomsky, pomskyVersion, runPomskyWithErrorHandler } from './lang/pomskyCli'
 import { CompileHandler, CompileResultHandler } from './types/compileHandler'
 import { initTooltips } from './lang/tooltips'
+import { initDefinition } from './lang/definition'
+import { initInlayHints } from './lang/inlayHints'
+import { initRename } from './lang/rename'
+import { initReferences } from './lang/references'
 
 setConnection(createConnection(ProposedFeatures.all))
 
@@ -25,6 +29,10 @@ initConfig(documents, validateTextDocument)
 initDiagnostics(documents)
 initCompletion(documents)
 initTooltips(documents)
+initDefinition(documents)
+initInlayHints(documents)
+initRename(documents)
+initReferences(documents)
 
 console.log('Pomsky language server started.')
 
@@ -43,6 +51,18 @@ connection.onInitialize((params: InitializeParams) => {
       // Tell the client that this server supports code completion.
       completionProvider: { resolveProvider: true },
       hoverProvider: true,
+      definitionProvider: true,
+      inlayHintProvider: true,
+      renameProvider: {
+        prepareProvider: true,
+      },
+      referencesProvider: true,
+      // codeActionProvider
+      // colorProvider
+      // documentFormattingProvider
+      // documentHighlightProvider
+      // foldingRangeProvider
+      // semanticTokensProvider
     },
   }
   if (capabilities.workspaceFolders) {

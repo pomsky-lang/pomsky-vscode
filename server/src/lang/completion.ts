@@ -8,8 +8,9 @@ import {
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { charSetCompletions, globalCompletions, lookupDocumentation } from './snippets'
-import { findClosestTokenIndex, isInCharacterSet, Token, tokenizePomsky } from './tokenizePomsky'
-import { connection, documentInfo } from '../state'
+import { connection, getInfo } from '../state'
+import { findClosestTokenIndex, isInCharacterSet } from './tokenUtils'
+import { Token } from '@pomsky-lang/parser'
 
 export function initCompletion(documents: TextDocuments<TextDocument>) {
   // Provides the initial list of the completion items
@@ -21,11 +22,7 @@ export function initCompletion(documents: TextDocuments<TextDocument>) {
       }
 
       const text = model.getText()
-
-      const docInfo = documentInfo[model.uri]
-      const tokens =
-        docInfo != null && docInfo.lastContent === text ? docInfo.tokens : tokenizePomsky(text)
-      documentInfo[model.uri] = { lastContent: text, tokens }
+      const { tokens } = getInfo(model.uri, text, 'tokens')
 
       const offset = model.offsetAt(position)
       const tokenIndex = findClosestTokenIndex(tokens, offset)
@@ -34,7 +31,12 @@ export function initCompletion(documents: TextDocuments<TextDocument>) {
       if (tokenIndex < tokens.length) {
         // don't show completions within strings or multi-char sigils such as `<<`
         const token = tokens[tokenIndex]
-        if (token[0] !== Token.Identifier && offset > token[1] && offset < token[2]) {
+        if (
+          token[0] !== Token.Identifier &&
+          token[0] !== Token.ReservedName &&
+          offset > token[1] &&
+          offset < token[2]
+        ) {
           return []
         }
 
