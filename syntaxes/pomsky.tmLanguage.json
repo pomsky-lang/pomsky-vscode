@@ -6,6 +6,7 @@
     { "include": "#keywords" },
     { "include": "#dstrings" },
     { "include": "#sstrings" },
+    { "include": "#charclasses" },
     { "include": "#references" },
     { "include": "#codepoints" },
     { "include": "#numbers" },
@@ -53,6 +54,20 @@
       "name": "string.quoted.single.pomsky",
       "begin": "'",
       "end": "'"
+    },
+    "charclasses": {
+      "begin": "\\[",
+      "end": "\\]",
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#dstrings" },
+        { "include": "#sstrings" },
+        { "include": "#codepoints" },
+        {
+          "name": "constant.language.pomsky",
+          "match": "\\b(gc|scx?|blk|general_category|script(_extensions)?|block):"
+        }
+      ]
     },
     "references": {
       "name": "variable.name.pomsky",
