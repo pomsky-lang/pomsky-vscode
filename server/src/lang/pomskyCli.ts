@@ -64,7 +64,7 @@ export async function runPomsky(
     previous.delete(key)
   }
 
-  const testArgs = runTests ? ['--test=pcre2'] : []
+  const testArgs = runTests ? [`--test=${runTests}`] : []
 
   const process = asyncSpawn(
     executable.path || 'pomsky',

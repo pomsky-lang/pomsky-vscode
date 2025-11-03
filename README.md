@@ -14,18 +14,18 @@ still in development and lacks some features.
 - Syntax highlighting
 - Underlined errors and warnings
 - Auto-completion of variables and character classes
+- Go to definition / find usages / rename variable
 - Running tests (enable with the `pomsky.runTests`) configuration
 - Live preview of compiled expression
   - Right-click and select `Open compiled RegExp on the right` or click the icon in the top right
     corner
 - Hover tooltips for keywords and built-ins
 - Embedded syntax highlighting in Markdown code blocks
+- Extend selection (partial support)
 
 Missing IDE features:
 
-- Go to definition / find usages / rename variable
 - Code formatting
-- Extend selection
 - Quick fixes
 - Compiled Regex: find and replace
 
@@ -38,9 +38,6 @@ You need to have the `pomsky` executable installed locally. Get it from the
 
 - rename the executable to `pomsky` and move it to `/usr/bin` or `~/.cargo/bin` so it can be
   detected automatically
-
-In the future we'll add a setting to specify a path to the executable. We might also embed an
-executable compiled to WASM, so no setup is needed.
 
 ## Extension Settings
 

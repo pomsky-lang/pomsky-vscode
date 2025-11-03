@@ -2,7 +2,7 @@
   "name": "pomsky-vscode",
   "displayName": "Pomsky",
   "description": "Language support for pomsky-lang",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "pomsky-lang",
   "repository": {
     "type": "git",
@@ -20,15 +20,15 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd .."
   },
   "devDependencies": {
-    "@types/node": "^20.9.0",
-    "@types/vscode": "^1.70.0",
-    "@types/vscode-webview": "^1.57.0",
-    "@typescript-eslint/eslint-plugin": "^6.10.0",
-    "@typescript-eslint/parser": "^6.10.0",
+    "@types/node": "^20.19.24",
+    "@types/vscode": "^1.100.0",
+    "@types/vscode-webview": "^1.57.5",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "concurrently": "9.1.0",
-    "esbuild": "^0.19.5",
-    "eslint": "^8.53.0",
-    "typescript": "^5.7.2"
+    "esbuild": "^0.25.12",
+    "eslint": "^8.57.1",
+    "typescript": "^5.9.3"
   },
   "readme": "README.md",
   "homepage": "https://pomsky-lang.org/",
@@ -39,7 +39,7 @@
   "license": "(MIT OR Apache-2.0)",
   "icon": "media/icon.png",
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.100.0"
   },
   "categories": [
     "Programming Languages"
@@ -104,8 +104,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./media/icon.png",
-          "dark": "./media/icon.png"
+          "light": "./media/goggles.png",
+          "dark": "./media/goggles.png"
         }
       },
       {
@@ -145,6 +145,7 @@
               "PCRE",
               "Python",
               "Rust",
+              "RE2",
               "Ruby"
             ],
             "enumDescriptions": [
@@ -154,13 +155,29 @@
               "PCRE flavor",
               "Python `re` flavor",
               "Rust `regex` flavor",
+              "Golang flavor",
               "Ruby (Oniguruma) flavor"
             ],
             "description": "Regex flavor to compile to"
           },
           "pomsky.runTests": {
             "title": "Run tests",
-            "type": "boolean",
+            "type": [
+              "boolean",
+              "string"
+            ],
+            "enum": [
+              false,
+              true,
+              "pcre2",
+              "rust"
+            ],
+            "enumDescriptions": [
+              "Don't run tests",
+              "Run tests with default engine",
+              "Run tests with PCRE2 engine",
+              "Run tests with Rust engine"
+            ],
             "default": false,
             "description": "Run Pomsky unit tests after every change"
           },

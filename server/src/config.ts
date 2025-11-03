@@ -17,7 +17,6 @@ const defaultSettings: Config = {
     path: 'pomsky',
     extraArgs: '',
   },
-  runTests: false,
 }
 let globalSettings: Config = defaultSettings
 
@@ -51,6 +50,10 @@ export async function getDocumentSettings(resource: string): Promise<Config> {
     documentSettings.set(resource, result)
   }
   const config = await result
+
+  if (typeof config.runTests === 'boolean') {
+    config.runTests = config.runTests ? 'pcre2' : undefined
+  }
 
   try {
     const path = await getCachedFullPathOrThrow(config.executable.path)

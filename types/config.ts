@@ -2,7 +2,7 @@ export type Flavor = 'JavaScript' | 'DotNet' | 'Java' | 'Rust' | 'Python' | 'PCR
 
 export interface Config {
   defaultFlavor: Flavor
-  runTests: boolean
+  runTests?: 'pcre2' | 'rust'
   executable: {
     path: string
     extraArgs: string

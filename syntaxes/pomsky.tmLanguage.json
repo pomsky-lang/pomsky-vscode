@@ -26,7 +26,7 @@
         },
         {
           "name": "keyword.operator.pomsky",
-          "match": "[|]"
+          "match": "[|&]"
         }
       ]
     },
